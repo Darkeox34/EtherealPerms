@@ -11,6 +11,9 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
+/**
+ * Handles JSON file storage for users and groups.
+ */
 class Storage(plugin: EtherealPerms) {
 
     private val dataFolder: Path = plugin.dataDirectory
@@ -28,6 +31,16 @@ class Storage(plugin: EtherealPerms) {
         val userFile = usersDir.resolve("$uuid.json")
         if (!userFile.exists()) return null
         return gson.fromJson(userFile.readText(), User::class.java)
+    }
+
+    fun loadAllUsers(): List<User> {
+        if (!Files.exists(usersDir)) return emptyList()
+        return Files.list(usersDir)
+            .filter { it.toString().endsWith(".json") }
+            .map { path ->
+                gson.fromJson(path.readText(), User::class.java)
+            }
+            .toList()
     }
 
     fun saveUser(user: User) {

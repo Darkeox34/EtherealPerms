@@ -7,24 +7,23 @@ import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.data.MessageFactory
 import it.ethereallabs.etherealperms.data.Node
 
-class GroupMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.command.group.meta.addprefix.desc") {
+class GroupMetaSetPlayerColorCommand : CommandBase("setplayercolor", "etherealperms.command.group.meta.setplayercolor.desc") {
 
     private val groupArg = withRequiredArg("group", "Target group", ArgTypes.STRING)
-    private val priorityArg = withRequiredArg("priority", "Prefix priority", ArgTypes.INTEGER)
-    private val prefixArg = withRequiredArg("prefix", "Prefix string", ArgTypes.STRING)
-    private val colorArg = withOptionalArg("color", "Prefix color (Hex)", ArgTypes.STRING)
+    private val priorityArg = withRequiredArg("priority", "Priority", ArgTypes.INTEGER)
+    private val colorArg = withRequiredArg("color", "Name color (Hex)", ArgTypes.STRING)
     private val formatArg = withOptionalArg("format", "Format (bold,italic,etc)", ArgTypes.STRING)
 
     init {
-        requirePermission("etherealperms.group.meta.addprefix")
+        requirePermission("etherealperms.group.meta.setplayercolor")
     }
 
     override fun executeSync(context: CommandContext) {
         val groupName = groupArg.get(context)
         val priority = priorityArg.get(context)
-        val prefix = prefixArg.get(context)
-        val color = if (colorArg.provided(context)) colorArg.get(context) else null
+        val color = colorArg.get(context)
         val format = if (formatArg.provided(context)) formatArg.get(context) else null
+
         val manager = EtherealPerms.instance.permissionManager
         val group = manager.getGroup(groupName)
 
@@ -33,14 +32,13 @@ class GroupMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.comman
             return
         }
 
-        group.nodes.add(Node("prefix.$priority.$prefix"))
-        if (color != null) {
-            group.nodes.add(Node("prefix_color.$priority.$color"))
-        }
+        group.nodes.removeIf { it.key.startsWith("username_color.") || it.key.startsWith("username_format.") }
+
+        group.nodes.add(Node("username_color.$priority.$color"))
         if (format != null) {
-            group.nodes.add(Node("prefix_format.$priority.$format"))
+            group.nodes.add(Node("username_format.$priority.$format"))
         }
         manager.saveData()
-        context.sendMessage(MessageFactory.success("Added prefix '$prefix' with priority $priority to group '${group.name}'."))
+        context.sendMessage(MessageFactory.success("Set username color '$color' for group '${group.name}'."))
     }
 }

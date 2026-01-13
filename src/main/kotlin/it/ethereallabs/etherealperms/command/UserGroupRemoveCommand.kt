@@ -6,13 +6,13 @@ import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.data.MessageFactory
 
-class UserParentRemoveCommand : CommandBase("remove", "etherealperms.command.user.parent.remove.desc") {
+class UserGroupRemoveCommand : CommandBase("remove", "etherealperms.command.user.group.remove.desc") {
 
     private val playerArg = withRequiredArg("player", "Target player", ArgTypes.PLAYER_REF)
     private val groupArg = withRequiredArg("group", "Group to remove", ArgTypes.STRING)
 
     init {
-        requirePermission("etherealperms.user.parent.remove")
+        requirePermission("etherealperms.user.group.remove")
     }
 
     override fun executeSync(context: CommandContext) {
@@ -25,6 +25,6 @@ class UserParentRemoveCommand : CommandBase("remove", "etherealperms.command.use
         val removed = user.nodes.removeIf { it.key.equals(parentNode, ignoreCase = true) }
         
         manager.saveData()
-        context.sendMessage(MessageFactory.success(if (removed) "Removed parent '$groupName' from user '${player.username}'." else "User does not have parent '$groupName'."))
+        context.sendMessage(MessageFactory.success(if (removed) "Removed group '$groupName' from user '${player.username}'." else "User is not in group '$groupName'."))
     }
 }

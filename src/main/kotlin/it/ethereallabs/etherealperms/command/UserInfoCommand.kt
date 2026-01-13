@@ -6,6 +6,9 @@ import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.data.MessageFactory
 
+/**
+ * Command to display information about a user.
+ */
 class UserInfoCommand : CommandBase("info", "etherealperms.command.user.info.desc") {
 
     // Using PLAYER_REF would be ideal, but STRING is more flexible if the player is offline.
@@ -33,8 +36,11 @@ class UserInfoCommand : CommandBase("info", "etherealperms.command.user.info.des
             return
         }
 
-        context.sendMessage(MessageFactory.info("--- User Info: ${user.username} ---"))
+        context.sendMessage(MessageFactory.info("User Info: ${user.username}"))
         context.sendMessage(MessageFactory.info("UUID: ${user.uuid}"))
+        
+        val groups = user.nodes.filter { it.key.startsWith("group.") }.joinToString(", ") { it.key.substring(6) }
+        context.sendMessage(MessageFactory.info("Groups: $groups"))
         context.sendMessage(MessageFactory.info("Permissions: ${user.nodes.joinToString { it.key }}"))
     }
 }

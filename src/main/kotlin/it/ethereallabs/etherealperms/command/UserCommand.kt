@@ -6,7 +6,7 @@ class UserCommand : AbstractCommandCollection("user", "etherealperms.command.use
     init {
         addSubCommand(UserInfoCommand())
         addSubCommand(UserPermissionCommand())
-        addSubCommand(UserParentCommand())
+        addSubCommand(UserGroupCommand())
         addSubCommand(UserMetaCommand())
         addSubCommand(UserClearCommand())
         addSubCommand(UserCloneCommand())

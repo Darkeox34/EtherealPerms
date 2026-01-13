@@ -7,7 +7,7 @@ import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.data.MessageFactory
 import it.ethereallabs.etherealperms.data.Node
 
-class GroupMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.command.group.meta.addprefix.desc") {
+class GroupMetaSetPrefixCommand : CommandBase("setprefix", "etherealperms.command.group.meta.setprefix.desc") {
 
     private val groupArg = withRequiredArg("group", "Target group", ArgTypes.STRING)
     private val priorityArg = withRequiredArg("priority", "Prefix priority", ArgTypes.INTEGER)
@@ -16,7 +16,7 @@ class GroupMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.comman
     private val formatArg = withOptionalArg("format", "Format (bold,italic,etc)", ArgTypes.STRING)
 
     init {
-        requirePermission("etherealperms.group.meta.addprefix")
+        requirePermission("etherealperms.group.meta.setprefix")
     }
 
     override fun executeSync(context: CommandContext) {
@@ -25,6 +25,7 @@ class GroupMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.comman
         val prefix = prefixArg.get(context)
         val color = if (colorArg.provided(context)) colorArg.get(context) else null
         val format = if (formatArg.provided(context)) formatArg.get(context) else null
+
         val manager = EtherealPerms.instance.permissionManager
         val group = manager.getGroup(groupName)
 
@@ -32,6 +33,8 @@ class GroupMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.comman
             context.sendMessage(MessageFactory.error("Group not found."))
             return
         }
+
+        group.nodes.removeIf { it.key.startsWith("prefix.") || it.key.startsWith("prefix_color.") || it.key.startsWith("prefix_format.") }
 
         group.nodes.add(Node("prefix.$priority.$prefix"))
         if (color != null) {
@@ -41,6 +44,6 @@ class GroupMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.comman
             group.nodes.add(Node("prefix_format.$priority.$format"))
         }
         manager.saveData()
-        context.sendMessage(MessageFactory.success("Added prefix '$prefix' with priority $priority to group '${group.name}'."))
+        context.sendMessage(MessageFactory.success("Set prefix '$prefix' (prio: $priority) for group '${group.name}' (cleared old prefixes)."))
     }
 }

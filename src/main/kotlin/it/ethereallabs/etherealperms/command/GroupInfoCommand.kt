@@ -23,9 +23,16 @@ class GroupInfoCommand : CommandBase("info", "etherealperms.command.group.info.d
             return
         }
 
-        context.sendMessage(MessageFactory.info("--- Group: ${group.name} ---"))
+        context.sendMessage(MessageFactory.info("Group: ${group.name}"))
         context.sendMessage(MessageFactory.info("Weight: ${group.weight}"))
         context.sendMessage(MessageFactory.info("Display Name: ${group.displayName ?: "None"}"))
         context.sendMessage(MessageFactory.info("Nodes: ${group.nodes.size}"))
+
+        val members = EtherealPerms.instance.permissionManager.getUsersWithGroup(groupName)
+        val count = members.size
+        val displayMembers = members.take(10).joinToString(", ")
+        val suffix = if (count > 10) " ... and ${count - 10} more" else ""
+
+        context.sendMessage(MessageFactory.info("Members ($count): $displayMembers$suffix"))
     }
 }

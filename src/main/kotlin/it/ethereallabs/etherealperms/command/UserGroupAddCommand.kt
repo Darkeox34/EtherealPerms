@@ -7,13 +7,13 @@ import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.data.MessageFactory
 import it.ethereallabs.etherealperms.data.Node
 
-class UserParentAddCommand : CommandBase("add", "etherealperms.command.user.parent.add.desc") {
+class UserGroupAddCommand : CommandBase("add", "etherealperms.command.user.group.add.desc") {
 
     private val playerArg = withRequiredArg("player", "Target player", ArgTypes.PLAYER_REF)
     private val groupArg = withRequiredArg("group", "Group to add", ArgTypes.STRING)
 
     init {
-        requirePermission("etherealperms.user.parent.add")
+        requirePermission("etherealperms.user.group.add")
     }
 
     override fun executeSync(context: CommandContext) {
@@ -30,12 +30,12 @@ class UserParentAddCommand : CommandBase("add", "etherealperms.command.user.pare
         val parentNode = "group.$groupName"
         
         if (user.nodes.any { it.key.equals(parentNode, ignoreCase = true) }) {
-             context.sendMessage(MessageFactory.error("User already has parent '$groupName'."))
+             context.sendMessage(MessageFactory.error("User is already in group '$groupName'."))
              return
         }
 
         user.nodes.add(Node(parentNode))
         manager.saveData()
-        context.sendMessage(MessageFactory.success("Added parent '$groupName' to user '${player.username}'."))
+        context.sendMessage(MessageFactory.success("Added group '$groupName' to user '${player.username}'."))
     }
 }

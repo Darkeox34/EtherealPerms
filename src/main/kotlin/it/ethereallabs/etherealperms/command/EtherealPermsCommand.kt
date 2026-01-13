@@ -1,7 +1,8 @@
 package it.ethereallabs.etherealperms.command
 
+import com.hypixel.hytale.server.core.Message
+import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractCommandCollection
-import it.ethereallabs.etherealperms.command.UserCommand
 
 class EtherealPermsCommand : AbstractCommandCollection("ep", "etherealperms.command.ep.desc") {
     init {
@@ -12,6 +13,6 @@ class EtherealPermsCommand : AbstractCommandCollection("ep", "etherealperms.comm
         addSubCommand(GroupCommand())
         addSubCommand(ListGroupsCommand())
         addSubCommand(CreateGroupCommand())
-
+        addSubCommand(ReloadConfigCommand())
     }
 }

@@ -1,0 +1,18 @@
+{
+    "Group": "EtherealLabs",
+    "Name": "EtherealPerms",
+    "Version": "1.0.0",
+    "Description": "A permission management plugin for Hytale",
+    "Authors": [
+        {
+            "Name": "Darkeox34",
+            "Email": "darkeox34@gmail.com",
+            "Url": "https://ethereallabs.it"
+        }
+    ],
+    "Website": "https://ethereallabs.it",
+    "Main": "it.ethereallabs.etherealperms.EtherealPerms",
+    "ServerVersion": ">=0.1.0",
+    "DisabledByDefault": false,
+    "IncludesAssetPack": true
+}

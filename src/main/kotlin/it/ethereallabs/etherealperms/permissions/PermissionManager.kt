@@ -169,7 +169,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > prefixPriority) {
+                    if (prio >= prefixPriority) {
                         prefixPriority = prio
                         prefix = parts[2]
                     }
@@ -178,7 +178,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > prefixColorPriority) {
+                    if (prio >= prefixColorPriority) {
                         prefixColorPriority = prio
                         prefixColor = parts[2]
                     }
@@ -187,7 +187,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > prefixFormatPriority) {
+                    if (prio >= prefixFormatPriority) {
                         prefixFormatPriority = prio
                         prefixFormat = parts[2]
                     }
@@ -196,7 +196,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > suffixPriority) {
+                    if (prio >= suffixPriority) {
                         suffixPriority = prio
                         suffix = parts[2]
                     }
@@ -205,7 +205,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > suffixColorPriority) {
+                    if (prio >= suffixColorPriority) {
                         suffixColorPriority = prio
                         suffixColor = parts[2]
                     }
@@ -214,7 +214,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > suffixFormatPriority) {
+                    if (prio >= suffixFormatPriority) {
                         suffixFormatPriority = prio
                         suffixFormat = parts[2]
                     }
@@ -223,7 +223,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > usernameColorPriority) {
+                    if (prio >= usernameColorPriority) {
                         usernameColorPriority = prio
                         usernameColor = parts[2]
                     }
@@ -232,7 +232,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > usernameFormatPriority) {
+                    if (prio >= usernameFormatPriority) {
                         usernameFormatPriority = prio
                         usernameFormat = parts[2]
                     }
@@ -241,7 +241,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > chatColorPriority) {
+                    if (prio >= chatColorPriority) {
                         chatColorPriority = prio
                         chatColor = parts[2]
                     }
@@ -250,7 +250,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio > chatFormatPriority) {
+                    if (prio >= chatFormatPriority) {
                         chatFormatPriority = prio
                         chatFormat = parts[2]
                     }
@@ -282,7 +282,6 @@ class PermissionManager(private val plugin: EtherealPerms) {
             if (!visitedGroups.add(group.name.lowercase())) return
 
             // Handle inheritance: Process parent groups first
-            // Assuming parents are defined as nodes "group.<name>"
             val parents = group.nodes
                 .filter { it.key.startsWith("group.") }
                 .mapNotNull { getGroup(it.key.substring(6)) }

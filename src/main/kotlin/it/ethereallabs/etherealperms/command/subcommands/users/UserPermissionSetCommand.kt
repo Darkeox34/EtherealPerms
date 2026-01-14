@@ -23,7 +23,7 @@ class UserPermissionSetCommand : CommandBase("set", "etherealperms.command.user.
         val value = if (valueArg.provided(context)) valueArg.get(context) else true
 
         val manager = EtherealPerms.instance.permissionManager
-        // loadUser ensures we have the user data even if they are offline (if stored) or creates it
+
         val user = manager.loadUser(player.uuid, player.username)
 
         user.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }

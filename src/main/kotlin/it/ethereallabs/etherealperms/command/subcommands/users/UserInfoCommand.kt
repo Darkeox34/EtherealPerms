@@ -1,10 +1,12 @@
 package it.ethereallabs.etherealperms.command.subcommands.users
 
+import com.hypixel.hytale.server.core.Message
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
+import java.awt.Color
 
 /**
  * Command to display information about a user.
@@ -18,8 +20,6 @@ class UserInfoCommand : CommandBase("info", "etherealperms.command.user.info.des
     }
 
     override fun executeSync(context: CommandContext) {
-        // This is a placeholder implementation, does not support offline players
-
         val player = playerArg.get(context)
 
         if (player == null) {
@@ -38,6 +38,9 @@ class UserInfoCommand : CommandBase("info", "etherealperms.command.user.info.des
         
         val groups = user.nodes.filter { it.key.startsWith("group.") }.joinToString(", ") { it.key.substring(6) }
         context.sendMessage(MessageFactory.info("Groups: $groups"))
-        context.sendMessage(MessageFactory.info("Permissions: ${user.nodes.joinToString { it.key }}"))
+        context.sendMessage(MessageFactory.info("Nodes(${user.nodes.size}):"))
+        for(node in user.nodes) {
+            context.sendMessage(Message.raw("- ${node.key}").color(Color.YELLOW))
+        }
     }
 }

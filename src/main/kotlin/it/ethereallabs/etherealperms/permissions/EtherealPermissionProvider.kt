@@ -16,8 +16,6 @@ class EtherealPermissionProvider(private val permissionManager: PermissionManage
         }
 
         // Retrieves all calculated permissions (including groups and inheritance).
-        // Maps boolean values: true -> "node", false -> "-node" to handle negations.
-        // Removes trailing ".*" for compatibility with Hytale's resolution logic.
         val effective = permissionManager.getEffectivePermissions(user)
         val result = effective.map { (key, value) ->
             val cleanKey = if (key.endsWith(".*")) key.dropLast(2) else key

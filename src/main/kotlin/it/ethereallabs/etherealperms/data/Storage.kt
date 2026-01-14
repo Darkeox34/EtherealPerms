@@ -62,7 +62,7 @@ class Storage(plugin: EtherealPerms) {
     }
 
     fun loadDefaultGroup(): Group {
-        return Group("default", 0, "Default").apply {
+        return Group("default", 0).apply {
             nodes.add(Node("etherealperms.default", true))
         }
     }

@@ -1,10 +1,12 @@
 package it.ethereallabs.etherealperms.commands.group
 
+import com.hypixel.hytale.server.core.Message
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
+import java.awt.Color
 
 class GroupInfoCommand : CommandBase("info", "etherealperms.command.group.info.desc") {
 
@@ -25,8 +27,10 @@ class GroupInfoCommand : CommandBase("info", "etherealperms.command.group.info.d
 
         context.sendMessage(MessageFactory.info("Group: ${group.name}"))
         context.sendMessage(MessageFactory.info("Weight: ${group.weight}"))
-        context.sendMessage(MessageFactory.info("Display Name: ${group.displayName ?: "None"}"))
-        context.sendMessage(MessageFactory.info("Nodes: ${group.nodes.size}"))
+        context.sendMessage(MessageFactory.info("Nodes(${group.nodes.size}):"))
+        for(node in group.nodes) {
+            context.sendMessage(Message.raw("- ${node.key}").color(Color.YELLOW))
+        }
 
         val members = EtherealPerms.instance.permissionManager.getUsersWithGroup(groupName)
         val count = members.size

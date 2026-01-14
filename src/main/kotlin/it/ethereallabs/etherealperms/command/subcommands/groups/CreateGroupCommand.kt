@@ -10,7 +10,6 @@ class CreateGroupCommand : CommandBase("creategroup", "etherealperms.command.cre
 
     private val groupNameArg = withRequiredArg("name", "The name of the group to create", ArgTypes.STRING)
     private val weightArg = withOptionalArg("weight", "Group weight", ArgTypes.INTEGER)
-    private val displayNameArg = withOptionalArg("displayname", "Group display name", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.creategroup")
@@ -19,13 +18,11 @@ class CreateGroupCommand : CommandBase("creategroup", "etherealperms.command.cre
     override fun executeSync(context: CommandContext) {
         val groupName = groupNameArg.get(context)
         val weight = if (weightArg.provided(context)) weightArg.get(context) else 0
-        val displayName = if (displayNameArg.provided(context)) displayNameArg.get(context) else null
 
         val manager = EtherealPerms.instance.permissionManager
 
         val group = manager.createGroup(groupName)
         group?.weight = weight
-        group?.displayName = displayName
         manager.saveData()
 
         if (group != null) {

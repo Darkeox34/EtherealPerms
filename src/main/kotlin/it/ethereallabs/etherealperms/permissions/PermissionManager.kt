@@ -45,7 +45,6 @@ class PermissionManager(private val plugin: EtherealPerms) {
      */
     fun loadUser(uuid: UUID, username: String): User {
         val user = storage.loadUser(uuid) ?: User(uuid, username).apply {
-            // Add default group to new users
             if (groups.containsKey("default")) {
                 nodes.add(Node("group.default"))
             }

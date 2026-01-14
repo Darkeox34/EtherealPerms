@@ -16,5 +16,6 @@ class EtherealPermsCommand : AbstractCommandCollection("ep", "etherealperms.comm
         addSubCommand(ListGroupsCommand())
         addSubCommand(CreateGroupCommand())
         addSubCommand(ReloadConfigCommand())
+        addSubCommand(WikiCommand())
     }
 }

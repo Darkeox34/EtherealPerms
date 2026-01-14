@@ -1,0 +1,19 @@
+package it.ethereallabs.etherealperms.command
+
+import com.hypixel.hytale.server.core.command.system.CommandContext
+import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import it.ethereallabs.etherealperms.EtherealPerms
+import it.ethereallabs.etherealperms.command.utils.MessageFactory
+import java.awt.Color
+
+class WikiCommand : CommandBase("wiki", "etherealperms.command.wiki.desc") {
+
+    init {
+        requirePermission("etherealperms.wiki")
+    }
+
+    override fun executeSync(context: CommandContext) {
+        context.sendMessage(MessageFactory.success("Click here to visit our Wiki").link("https://ethereallabs.it/etherealperms-wiki").color(
+            Color.GREEN))
+    }
+}

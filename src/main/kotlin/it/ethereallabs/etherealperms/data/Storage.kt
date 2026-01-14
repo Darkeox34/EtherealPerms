@@ -4,6 +4,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import it.ethereallabs.etherealperms.EtherealPerms
+import it.ethereallabs.etherealperms.permissions.models.Group
+import it.ethereallabs.etherealperms.permissions.models.Node
+import it.ethereallabs.etherealperms.permissions.models.User
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*

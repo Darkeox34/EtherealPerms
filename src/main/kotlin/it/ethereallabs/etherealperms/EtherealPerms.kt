@@ -1,7 +1,5 @@
 package it.ethereallabs.etherealperms
 
-import com.hypixel.hytale.server.core.Message
-import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent
@@ -9,14 +7,11 @@ import com.hypixel.hytale.server.core.permissions.PermissionsModule
 import com.hypixel.hytale.server.core.permissions.provider.PermissionProvider
 import com.hypixel.hytale.server.core.plugin.JavaPlugin
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit
-import com.hypixel.hytale.server.core.universe.world.World
-import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent
 import it.ethereallabs.etherealperms.command.EtherealPermsCommand
-import it.ethereallabs.etherealperms.data.ChatListener
-import it.ethereallabs.etherealperms.data.PermissionManager
+import it.ethereallabs.etherealperms.events.ChatListener
+import it.ethereallabs.etherealperms.permissions.EtherealPermissionProvider
+import it.ethereallabs.etherealperms.permissions.PermissionManager
 import java.util.*
-import java.util.function.Consumer
-import java.util.logging.Level
 
 
 /**
@@ -79,48 +74,4 @@ class EtherealPerms(init: JavaPluginInit) : JavaPlugin(init) {
     private fun onPlayerDisconnect(event: PlayerDisconnectEvent) {
         permissionManager.unloadUser(event.playerRef.uuid)
     }
-}
-
-/**
- * Implementation of PermissionProvider to integrate with Hytale's permission system.
- */
-class EtherealPermissionProvider(private val permissionManager: PermissionManager) : PermissionProvider {
-    override fun getName(): String = "EtherealPerms"
-
-    override fun getUserPermissions(uuid: UUID): Set<String> {
-        val user = permissionManager.getUser(uuid)
-        if (user == null) {
-            return emptySet()
-        }
-        
-        // Retrieves all calculated permissions (including groups and inheritance).
-        // Maps boolean values: true -> "node", false -> "-node" to handle negations.
-        // Removes trailing ".*" for compatibility with Hytale's resolution logic.
-        val effective = permissionManager.getEffectivePermissions(user)
-        val result = effective.map { (key, value) ->
-            val cleanKey = if (key.endsWith(".*")) key.dropLast(2) else key
-            if (value) cleanKey else "-$cleanKey"
-        }.toSet()
-        return result
-    }
-
-    // Returns user groups for compatibility with other plugins.
-    override fun getGroupsForUser(uuid: UUID): Set<String> {
-        val user = permissionManager.getUser(uuid) ?: return emptySet()
-        val groups = user.nodes
-            .filter { it.key.startsWith("group.") }
-            .map { it.key.substring(6) }
-            .toSet()
-        return groups
-    }
-
-    override fun getGroupPermissions(group: String): Set<String> = emptySet()
-
-    // Modification methods left empty because everything is handled via plugin commands.
-    override fun addUserPermissions(uuid: UUID, permissions: Set<String>) {}
-    override fun removeUserPermissions(uuid: UUID, permissions: Set<String>) {}
-    override fun addGroupPermissions(group: String, permissions: Set<String>) {}
-    override fun removeGroupPermissions(group: String, permissions: Set<String>) {}
-    override fun addUserToGroup(uuid: UUID, group: String) {}
-    override fun removeUserFromGroup(uuid: UUID, group: String) {}
 }

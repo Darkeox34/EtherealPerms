@@ -27,6 +27,6 @@ class UserCloneCommand : CommandBase("clone", "etherealperms.command.user.clone.
         targetUser.nodes.addAll(sourceUser.nodes)
         
         manager.saveData()
-        context.sendMessage(MessageFactory.success("Cloned permissions from '${sourcePlayer.username}' to '${targetPlayer.username}'."))
+        context.sendMessage(MessageFactory.success("Cloned nodes from '${sourcePlayer.username}' to '${targetPlayer.username}'."))
     }
 }

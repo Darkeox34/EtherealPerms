@@ -21,6 +21,6 @@ class UserClearCommand : CommandBase("clear", "etherealperms.command.user.clear.
 
         user.nodes.clear()
         manager.saveData()
-        context.sendMessage(MessageFactory.success("Cleared all permissions for user '${player.username}'."))
+        context.sendMessage(MessageFactory.success("Cleared all nodes for user '${player.username}'."))
     }
 }

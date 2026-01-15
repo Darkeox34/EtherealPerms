@@ -5,13 +5,5 @@ package it.ethereallabs.etherealperms.permissions.models
  */
 data class ChatMeta(
     val prefix: String,
-    val prefixColor: String?,
-    val prefixFormat: String?,
-    val suffix: String,
-    val suffixColor: String?,
-    val suffixFormat: String?,
-    val usernameColor: String?,
-    val usernameFormat: String?,
-    val chatColor: String?,
-    val chatFormat: String?
+    val suffix: String
 )

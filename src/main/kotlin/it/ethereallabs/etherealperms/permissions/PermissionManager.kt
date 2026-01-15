@@ -17,7 +17,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     private val groups = ConcurrentHashMap<String, Group>()
     private val users = ConcurrentHashMap<UUID, User>()
 
-    fun reloadData(){
+     fun reloadData(){
         groups.clear()
         loadData()
     }

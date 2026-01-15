@@ -1,83 +1,90 @@
 package it.ethereallabs.etherealperms.data
 
 import Configs
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.permissions.models.Group
-import it.ethereallabs.etherealperms.permissions.models.Node
 import it.ethereallabs.etherealperms.permissions.models.User
 import org.yaml.snakeyaml.Yaml
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.exists
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
 
-/**
- * Handles JSON file storage for users and groups.
- */
-class Storage(plugin: EtherealPerms) {
+class Storage(private val plugin: EtherealPerms) {
 
-    private val dataFolder: Path = plugin.dataDirectory
-    private val gson: Gson = GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create()
+    private val configFile: Path by lazy { plugin.dataDirectory.resolve("config.yml") }
     private val yaml = Yaml()
-
-    private val usersDir: Path by lazy { dataFolder.resolve("users") }
-    private val groupsFile: Path by lazy { dataFolder.resolve("groups.json") }
-    private val configFile: Path by lazy { dataFolder.resolve("config.yml") }
 
     @Volatile
     private var configs: Configs? = null
 
+    lateinit var storageMethod: IStorageMethod
+
     init {
-        if (!Files.exists(dataFolder)) Files.createDirectories(dataFolder)
-        if (!Files.exists(usersDir)) Files.createDirectories(usersDir)
+        if (!Files.exists(plugin.dataDirectory)) Files.createDirectories(plugin.dataDirectory)
         if (!Files.exists(configFile)) {
             javaClass.classLoader.getResourceAsStream("config.yml")?.use { input ->
                 Files.copy(input, configFile)
             } ?: throw IllegalStateException("config.yml not found in resources")
         }
+        reloadStorageMethod()
     }
 
-    fun loadUser(uuid: UUID): User? {
-        val userFile = usersDir.resolve("$uuid.json")
-        if (!userFile.exists()) return null
-        return gson.fromJson(userFile.readText(), User::class.java)
-    }
+    private fun reloadStorageMethod() {
+        var config = loadRawConfig()
+        var storageConfig = config["storage"] as? Map<String, Any>
 
-    fun loadAllUsers(): List<User> {
-        if (!Files.exists(usersDir)) return emptyList()
-        return Files.list(usersDir)
-            .filter { it.toString().endsWith(".json") }
-            .map { path ->
-                gson.fromJson(path.readText(), User::class.java)
+        if (storageConfig == null) {
+            plugin.logger.atWarning().log("Storage configuration not found. Creating backup and restoring from resources.")
+            val backupFile = configFile.resolveSibling("config.yml.bck")
+            try {
+                Files.move(configFile, backupFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            } catch (e: java.io.IOException) {
+                throw IllegalStateException("Failed to back up config.yml", e)
             }
-            .toList()
-    }
 
-    fun saveUser(user: User) {
-        val userFile = usersDir.resolve("${user.uuid}.json")
-        userFile.writeText(gson.toJson(user))
-    }
+            javaClass.classLoader.getResourceAsStream("config.yml")?.use { input ->
+                Files.copy(input, configFile)
+            } ?: throw IllegalStateException("config.yml not found in resources")
 
-    fun loadGroups(): MutableMap<String, Group> {
-        if (!groupsFile.exists()) return mutableMapOf()
-        val type = object : TypeToken<MutableMap<String, Group>>() {}.type
-        return gson.fromJson(groupsFile.readText(), type)
-    }
+            config = loadRawConfig()
+            storageConfig = config["storage"] as? Map<String, Any>
+                ?: throw IllegalStateException("Storage configuration is still missing after restoring from resources.")
+        }
 
-    fun saveGroups(groups: Map<String, Group>) {
-        groupsFile.writeText(gson.toJson(groups))
-    }
+        val type = storageConfig["type"] as? String ?: "local"
 
-    fun loadDefaultGroup(): Group {
-        return Group("default", 0).apply {
-            nodes.add(Node("etherealperms.default", true))
+        storageMethod = when (type.lowercase()) {
+            "mongodb" -> {
+                val databaseConfig = storageConfig["database"] as? Map<String, Any>
+                    ?: throw IllegalStateException("Database configuration 'database' not found under 'storage' for mongodb")
+                val dbConfig = databaseConfig["mongodb"] as? Map<String, Any>
+                    ?: throw IllegalStateException("MongoDB configuration not found")
+                MongoStorage(
+                    dbConfig["connection-string"] as String,
+                    dbConfig["database"] as String
+                )
+            }
+            "mysql" -> {
+                val databaseConfig = storageConfig["database"] as? Map<String, Any>
+                    ?: throw IllegalStateException("Database configuration 'database' not found under 'storage' for mysql")
+                val dbConfig = databaseConfig["mysql"] as? Map<String, Any>
+                    ?: throw IllegalStateException("MySQL configuration not found")
+                MySqlStorage(dbConfig)
+            }
+            else -> FileStorage(plugin)
         }
     }
+
+    private fun loadRawConfig(): Map<String, Any> {
+        return Files.newInputStream(configFile).use { yaml.load(it) }
+    }
+
+    fun loadUser(uuid: UUID): User? = storageMethod.loadUser(uuid)
+    fun saveUser(user: User) = storageMethod.saveUser(user)
+    fun loadAllUsers(): List<User> = storageMethod.loadAllUsers()
+    fun loadGroups(): MutableMap<String, Group> = storageMethod.loadGroups()
+    fun saveGroups(groups: Map<String, Group>) = storageMethod.saveGroups(groups)
+    fun loadDefaultGroup(): Group = storageMethod.loadDefaultGroup()
 
     fun getConfigs(): Configs {
         return configs ?: loadConfigs()
@@ -85,18 +92,13 @@ class Storage(plugin: EtherealPerms) {
 
     fun reloadConfigs() {
         configs = loadConfigs()
+        reloadStorageMethod()
     }
 
     fun loadConfigs(): Configs {
-        val input = Files.newInputStream(configFile)
-        val data = yaml.load<Map<String, Any>>(input)
-
-        val chatSection = data["chat"] as? Map<*, *>
-            ?: error("Missing 'chat' section in config.yml")
-
-        val format = chatSection["format"] as? String
-            ?: error("Missing chat.format in config.yml")
-
+        val data = loadRawConfig()
+        val chatSection = data["chat"] as? Map<*, *> ?: error("Missing 'chat' section in config.yml")
+        val format = chatSection["format"] as? String ?: error("Missing chat.format in config.yml")
         val groupFormats = (chatSection["group-formats"] as? Map<*, *>)?.mapNotNull {
             val key = it.key as? String ?: return@mapNotNull null
             val value = it.value as? String ?: return@mapNotNull null
@@ -108,5 +110,42 @@ class Storage(plugin: EtherealPerms) {
         return config
     }
 
+    fun sync() {
 
+
+        if (storageMethod is FileStorage) {
+            plugin.logger.atWarning().log("Sync is not available for local file storage.")
+            return
+        }
+        plugin.logger.atInfo().log("Syncing data from database...")
+
+        val fileStorage = FileStorage(plugin)
+        val groups = storageMethod.loadGroups()
+        val users = storageMethod.loadAllUsers()
+
+        if (groups.isEmpty() && users.isEmpty()) {
+            plugin.logger.atInfo().log("Database is empty, loading default data.")
+            val defaultGroup = fileStorage.loadDefaultGroup()
+            fileStorage.saveGroups(mapOf(defaultGroup.name to defaultGroup))
+        } else {
+            fileStorage.saveGroups(groups)
+            users.forEach { fileStorage.saveUser(it) }
+        }
+        plugin.logger.atInfo().log("Sync complete.")
+    }
+
+    fun syncUpload() {
+        if (storageMethod is FileStorage) {
+            plugin.logger.atWarning().log("Sync upload is not available for local file storage.")
+            return
+        }
+        plugin.logger.atInfo().log("Uploading local data to the database...")
+        val fileStorage = FileStorage(plugin)
+        val groups = fileStorage.loadGroups()
+        val users = fileStorage.loadAllUsers()
+
+        storageMethod.saveGroups(groups)
+        users.forEach { storageMethod.saveUser(it) }
+        plugin.logger.atInfo().log("Upload complete.")
+    }
 }

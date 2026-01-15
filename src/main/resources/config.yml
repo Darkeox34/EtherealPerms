@@ -20,3 +20,25 @@ chat:
   group-formats:
   #  default: '{DISPLAYNAME}: {MESSAGE}'
   #  admin: '[{GROUP}] {DISPLAYNAME} : {MESSAGE}'
+
+############################################################
+# +------------------------------------------------------+ #
+# |                  Storage Settings                    | #
+# +------------------------------------------------------+ #
+############################################################
+
+storage:
+  # Available types: local, mongodb, mysql
+  type: local
+  #sync-interval: 60 # In minutes, 0 to disable
+
+  database:
+    mongodb:
+      connection-string: "mongodb://localhost:27017"
+      database: "etherealperms"
+    mysql:
+      host: "localhost"
+      port: 3306
+      database: "etherealperms"
+      username: "root"
+      password: "password"

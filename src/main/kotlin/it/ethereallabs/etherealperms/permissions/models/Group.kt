@@ -1,9 +1,12 @@
 package it.ethereallabs.etherealperms.permissions.models
 
+import kotlinx.serialization.Serializable
+
 interface PermissionSubject {
     val nodes: MutableSet<Node>
 }
 
+@Serializable
 data class Group(
     val name: String,
     var weight: Int = 0,

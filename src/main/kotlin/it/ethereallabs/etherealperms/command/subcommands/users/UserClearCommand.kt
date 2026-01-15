@@ -16,7 +16,7 @@ class UserClearCommand : CommandBase("clear", "etherealperms.command.user.clear.
 
     override fun executeSync(context: CommandContext) {
         val player = playerArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val user = manager.loadUser(player.uuid, player.username)
 
         user.nodes.clear()

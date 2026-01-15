@@ -1,7 +1,7 @@
 package it.ethereallabs.etherealperms.permissions
 
 import it.ethereallabs.etherealperms.EtherealPerms
-import it.ethereallabs.etherealperms.data.Storage
+import it.ethereallabs.etherealperms.EtherealPerms.Companion.storage
 import it.ethereallabs.etherealperms.permissions.models.ChatMeta
 import it.ethereallabs.etherealperms.permissions.models.Group
 import it.ethereallabs.etherealperms.permissions.models.Node
@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class PermissionManager(private val plugin: EtherealPerms) {
 
-    private val storage = Storage(plugin)
     private val groups = ConcurrentHashMap<String, Group>()
     private val users = ConcurrentHashMap<UUID, User>()
 
@@ -64,6 +63,18 @@ class PermissionManager(private val plugin: EtherealPerms) {
     }
 
     fun getUser(uuid: UUID): User? = users[uuid]
+
+    fun getUserPrimaryGroup(uuid: UUID): Group? {
+        val user = getUser(uuid) ?: return null
+        return user.nodes
+            .asSequence()
+            .filter { it.key.startsWith("group.", ignoreCase = true) }
+            .mapNotNull { node ->
+                getGroup(node.key.substringAfter("group."))
+            }
+            .maxByOrNull { it.weight }
+    }
+
 
     fun getGroup(name: String): Group? = groups[name.lowercase()]
 

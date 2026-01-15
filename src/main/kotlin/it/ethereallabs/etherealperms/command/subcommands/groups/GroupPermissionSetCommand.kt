@@ -22,7 +22,7 @@ class GroupPermissionSetCommand : CommandBase("set", "etherealperms.command.grou
         val nodeKey = nodeArg.get(context)
         val value = if (valueArg.provided(context)) valueArg.get(context) else true
 
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val group = manager.getGroup(groupName)
 
         if (group == null) {
@@ -30,11 +30,10 @@ class GroupPermissionSetCommand : CommandBase("set", "etherealperms.command.grou
             return
         }
 
-        // Remove any existing node with the same key before adding the new one
         group.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
         group.nodes.add(Node(nodeKey, value))
 
-        manager.saveData() // Save changes
+        manager.saveData()
 
         context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value' for group '${group.name}'."))
     }

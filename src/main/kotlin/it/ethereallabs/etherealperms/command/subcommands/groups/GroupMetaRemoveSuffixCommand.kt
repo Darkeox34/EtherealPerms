@@ -20,7 +20,7 @@ class GroupMetaRemoveSuffixCommand : CommandBase("removesuffix", "etherealperms.
         val groupName = groupArg.get(context)
         val priority = priorityArg.get(context)
         val suffix = suffixArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
 
         val group = manager.getGroup(groupName)
         if (group == null) {

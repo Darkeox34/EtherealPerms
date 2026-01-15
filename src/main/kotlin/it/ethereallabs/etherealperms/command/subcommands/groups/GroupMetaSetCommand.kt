@@ -21,7 +21,7 @@ class GroupMetaSetCommand : CommandBase("set", "etherealperms.command.group.meta
         val groupName = groupArg.get(context)
         val key = keyArg.get(context)
         val value = valueArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val group = manager.getGroup(groupName)
 
         if (group == null) {

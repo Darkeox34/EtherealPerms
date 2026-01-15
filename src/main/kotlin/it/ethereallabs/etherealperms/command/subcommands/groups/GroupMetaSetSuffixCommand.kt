@@ -26,7 +26,7 @@ class GroupMetaSetSuffixCommand : CommandBase("setsuffix", "etherealperms.comman
         val color = if (colorArg.provided(context)) colorArg.get(context) else null
         val format = if (formatArg.provided(context)) formatArg.get(context) else null
 
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val group = manager.getGroup(groupName)
 
         if (group == null) {

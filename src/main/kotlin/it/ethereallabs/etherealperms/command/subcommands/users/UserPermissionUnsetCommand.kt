@@ -19,7 +19,7 @@ class UserPermissionUnsetCommand : CommandBase("unset", "etherealperms.command.u
         val player = playerArg.get(context)
         val nodeKey = nodeArg.get(context)
 
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         // We use loadUser to ensure we can modify permissions even if the user wasn't previously cached
         val user = manager.loadUser(player.uuid, player.username)
 

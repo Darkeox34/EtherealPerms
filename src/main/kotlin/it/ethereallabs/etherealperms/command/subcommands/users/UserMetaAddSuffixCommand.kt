@@ -25,7 +25,7 @@ class UserMetaAddSuffixCommand : CommandBase("addsuffix", "etherealperms.command
         val suffix = suffixArg.get(context)
         val color = if (colorArg.provided(context)) colorArg.get(context) else null
         val format = if (formatArg.provided(context)) formatArg.get(context) else null
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val user = manager.loadUser(player.uuid, player.username)
 
         user.nodes.add(Node("suffix.$priority.$suffix"))

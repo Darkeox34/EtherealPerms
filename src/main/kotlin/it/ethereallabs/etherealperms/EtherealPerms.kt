@@ -8,6 +8,7 @@ import com.hypixel.hytale.server.core.permissions.provider.PermissionProvider
 import com.hypixel.hytale.server.core.plugin.JavaPlugin
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit
 import it.ethereallabs.etherealperms.command.EtherealPermsCommand
+import it.ethereallabs.etherealperms.data.Storage
 import it.ethereallabs.etherealperms.events.ChatListener
 import it.ethereallabs.etherealperms.permissions.EtherealPermissionProvider
 import it.ethereallabs.etherealperms.permissions.PermissionManager
@@ -19,21 +20,24 @@ import java.util.*
  */
 class EtherealPerms(init: JavaPluginInit) : JavaPlugin(init) {
 
-    lateinit var permissionManager: PermissionManager
-        private set
-
     companion object {
         lateinit var instance: EtherealPerms
+            private set
+        lateinit var permissionManager: PermissionManager
+            private set
+        lateinit var storage: Storage
             private set
     }
 
     init {
         instance = this
+        storage = Storage(this)
+        permissionManager = PermissionManager(this)
     }
 
     protected override fun setup() {
-        permissionManager = PermissionManager(this)
         permissionManager.loadData()
+        storage.loadConfigs()
 
         val permissionsModule = PermissionsModule.get()
         if (permissionsModule != null) {

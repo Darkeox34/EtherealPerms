@@ -18,7 +18,7 @@ class GroupInfoCommand : CommandBase("info", "etherealperms.command.group.info.d
 
     override fun executeSync(context: CommandContext) {
         val groupName = groupArg.get(context)
-        val group = EtherealPerms.instance.permissionManager.getGroup(groupName)
+        val group = EtherealPerms.permissionManager.getGroup(groupName)
 
         if (group == null) {
             context.sendMessage(MessageFactory.error("Group not found."))
@@ -32,7 +32,7 @@ class GroupInfoCommand : CommandBase("info", "etherealperms.command.group.info.d
             context.sendMessage(Message.raw("- ${node.key}").color(Color.YELLOW))
         }
 
-        val members = EtherealPerms.instance.permissionManager.getUsersWithGroup(groupName)
+        val members = EtherealPerms.permissionManager.getUsersWithGroup(groupName)
         val count = members.size
         val displayMembers = members.take(10).joinToString(", ")
         val suffix = if (count > 10) " ... and ${count - 10} more" else ""

@@ -18,7 +18,7 @@ class GroupSetWeightCommand : CommandBase("setweight", "etherealperms.command.gr
     override fun executeSync(context: CommandContext) {
         val groupName = groupArg.get(context)
         val weight = weightArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val group = manager.getGroup(groupName)
 
         if (group == null) {

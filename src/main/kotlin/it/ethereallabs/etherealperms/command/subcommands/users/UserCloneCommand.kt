@@ -18,7 +18,7 @@ class UserCloneCommand : CommandBase("clone", "etherealperms.command.user.clone.
     override fun executeSync(context: CommandContext) {
         val sourcePlayer = sourceArg.get(context)
         val targetPlayer = targetArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         
         val sourceUser = manager.loadUser(sourcePlayer.uuid, sourcePlayer.username)
         val targetUser = manager.loadUser(targetPlayer.uuid, targetPlayer.username)

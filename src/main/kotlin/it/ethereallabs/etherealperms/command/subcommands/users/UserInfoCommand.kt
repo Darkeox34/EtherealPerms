@@ -27,7 +27,7 @@ class UserInfoCommand : CommandBase("info", "etherealperms.command.user.info.des
             return
         }
 
-        val user = EtherealPerms.instance.permissionManager.getUser(player.uuid)
+        val user = EtherealPerms.permissionManager.getUser(player.uuid)
         if (user == null) {
             context.sendMessage(MessageFactory.error("Permissions data for '${player.username}' not found."))
             return

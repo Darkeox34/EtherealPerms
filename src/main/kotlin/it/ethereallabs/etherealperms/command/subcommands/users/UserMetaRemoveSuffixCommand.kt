@@ -20,7 +20,7 @@ class UserMetaRemoveSuffixCommand : CommandBase("removesuffix", "etherealperms.c
         val player = playerArg.get(context)
         val priority = priorityArg.get(context)
         val suffix = suffixArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
 
         val user = manager.loadUser(player.uuid, player.username)
         

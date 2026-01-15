@@ -12,8 +12,8 @@ class GroupMetaSetPrefixCommand : CommandBase("setprefix", "etherealperms.comman
     private val groupArg = withRequiredArg("group", "Target group", ArgTypes.STRING)
     private val priorityArg = withRequiredArg("priority", "Prefix priority", ArgTypes.INTEGER)
     private val prefixArg = withRequiredArg("prefix", "Prefix string", ArgTypes.STRING)
-    private val colorArg = withOptionalArg("color", "Prefix color (Hex)", ArgTypes.STRING)
-    private val formatArg = withOptionalArg("format", "Format (bold,italic,etc)", ArgTypes.STRING)
+    //private val colorArg = withOptionalArg("color", "Prefix color (Hex)", ArgTypes.STRING)
+    //private val formatArg = withOptionalArg("format", "Format (bold,italic,etc)", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.group.meta.setprefix")
@@ -23,10 +23,10 @@ class GroupMetaSetPrefixCommand : CommandBase("setprefix", "etherealperms.comman
         val groupName = groupArg.get(context)
         val priority = priorityArg.get(context)
         val prefix = prefixArg.get(context)
-        val color = if (colorArg.provided(context)) colorArg.get(context) else null
-        val format = if (formatArg.provided(context)) formatArg.get(context) else null
+        //val color = if (colorArg.provided(context)) colorArg.get(context) else null
+        //val format = if (formatArg.provided(context)) formatArg.get(context) else null
 
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val group = manager.getGroup(groupName)
 
         if (group == null) {
@@ -37,12 +37,12 @@ class GroupMetaSetPrefixCommand : CommandBase("setprefix", "etherealperms.comman
         group.nodes.removeIf { it.key.startsWith("prefix.") || it.key.startsWith("prefix_color.") || it.key.startsWith("prefix_format.") }
 
         group.nodes.add(Node("prefix.$priority.$prefix"))
-        if (color != null) {
-            group.nodes.add(Node("prefix_color.$priority.$color"))
-        }
-        if (format != null) {
-            group.nodes.add(Node("prefix_format.$priority.$format"))
-        }
+        //if (color != null) {
+        //    group.nodes.add(Node("prefix_color.$priority.$color"))
+        //}
+        //if (format != null) {
+        //    group.nodes.add(Node("prefix_format.$priority.$format"))
+        //}
         manager.saveData()
         context.sendMessage(MessageFactory.success("Set prefix '$prefix' (prio: $priority) for group '${group.name}' (cleared old prefixes)."))
     }

@@ -19,7 +19,7 @@ class UserGroupAddCommand : CommandBase("add", "etherealperms.command.user.group
     override fun executeSync(context: CommandContext) {
         val player = playerArg.get(context)
         val groupName = groupArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         
         if (manager.getGroup(groupName) == null) {
             context.sendMessage(MessageFactory.error("Group '$groupName' does not exist."))

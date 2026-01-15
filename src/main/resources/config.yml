@@ -1,0 +1,22 @@
+############################################################
+# +------------------------------------------------------+ #
+# |                   Chat Settings                      | #
+# +------------------------------------------------------+ #
+############################################################
+
+# Available placeholders:
+# {MESSAGE} - The content of the chat message.
+# {DISPLAYNAME} - The sender's display name.
+# {PREFIX} - The sender's prefix.
+# {SUFFIX} - The sender's suffix.
+# {GROUP} - The sender's primary group name.
+
+chat:
+  format: '{PREFIX} {DISPLAYNAME} {SUFFIX} > {MESSAGE} '
+  #format: '<red>{GROUP}<reset> <white>{DISPLAYNAME} <gray>:<reset> {MESSAGE}'
+  #format: '{PREFIX} <blue>{DISPLAYNAME}<reset> {SUFFIX}: <yellow>{MESSAGE}'
+
+  # You can also specify a format for each group.
+  group-formats:
+  #  default: '{DISPLAYNAME}: {MESSAGE}'
+  #  admin: '[{GROUP}] {DISPLAYNAME} : {MESSAGE}'

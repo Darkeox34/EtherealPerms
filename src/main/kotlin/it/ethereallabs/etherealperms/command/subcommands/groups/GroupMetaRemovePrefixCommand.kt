@@ -20,7 +20,7 @@ class GroupMetaRemovePrefixCommand : CommandBase("removeprefix", "etherealperms.
         val groupName = groupArg.get(context)
         val priority = priorityArg.get(context)
         val prefix = prefixArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
 
         val group = manager.getGroup(groupName)
         if (group == null) {

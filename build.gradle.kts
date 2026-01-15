@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     compileOnly(files("libs/HytaleServer.jar"))
+    implementation("org.yaml:snakeyaml:2.3")
 }
 
 kotlin {

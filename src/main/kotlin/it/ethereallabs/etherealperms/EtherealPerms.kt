@@ -8,10 +8,16 @@ import com.hypixel.hytale.server.core.permissions.provider.PermissionProvider
 import com.hypixel.hytale.server.core.plugin.JavaPlugin
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit
 import it.ethereallabs.etherealperms.command.EtherealPermsCommand
+import it.ethereallabs.etherealperms.data.FileStorage
+import it.ethereallabs.etherealperms.data.IStorageMethod
+import it.ethereallabs.etherealperms.data.MongoStorage
+import it.ethereallabs.etherealperms.data.MySqlStorage
 import it.ethereallabs.etherealperms.data.Storage
 import it.ethereallabs.etherealperms.events.ChatListener
 import it.ethereallabs.etherealperms.permissions.EtherealPermissionProvider
 import it.ethereallabs.etherealperms.permissions.PermissionManager
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 
@@ -36,8 +42,9 @@ class EtherealPerms(init: JavaPluginInit) : JavaPlugin(init) {
     }
 
     protected override fun setup() {
-        permissionManager.loadData()
-        storage.loadConfigs()
+        runBlocking {
+            permissionManager.loadData()
+        }
 
         val permissionsModule = PermissionsModule.get()
         if (permissionsModule != null) {
@@ -65,17 +72,23 @@ class EtherealPerms(init: JavaPluginInit) : JavaPlugin(init) {
     }
 
     protected override fun shutdown() {
-        permissionManager.saveData()
+        runBlocking {
+            permissionManager.saveData()
+        }
         logger.atInfo().log("EtherealPerms Disabled")
         logger.atInfo().log("Created by EtherealLabs")
         logger.atInfo().log("https://ethereallabs.it")
     }
 
     private fun onPlayerConnect(event: PlayerConnectEvent) {
-        permissionManager.loadUser(event.playerRef.uuid, event.playerRef.username)
+        storage.storageScope.launch{
+            permissionManager.loadUser(event.playerRef.uuid, event.playerRef.username)
+        }
     }
 
     private fun onPlayerDisconnect(event: PlayerDisconnectEvent) {
-        permissionManager.unloadUser(event.playerRef.uuid)
+        storage.storageScope.launch {
+            permissionManager.unloadUser(event.playerRef.uuid)
+        }
     }
 }

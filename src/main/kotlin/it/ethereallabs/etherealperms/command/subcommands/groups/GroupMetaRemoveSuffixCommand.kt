@@ -3,8 +3,10 @@ package it.ethereallabs.etherealperms.command.subcommands.groups
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
+import kotlinx.coroutines.launch
 
 class GroupMetaRemoveSuffixCommand : CommandBase("removesuffix", "etherealperms.command.group.meta.removesuffix.desc") {
 
@@ -27,27 +29,34 @@ class GroupMetaRemoveSuffixCommand : CommandBase("removesuffix", "etherealperms.
             context.sendMessage(MessageFactory.error("Group '$groupName' does not exist."))
             return
         }
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val searchKey = if (suffix != null) "suffix.$priority.$suffix" else "suffix.$priority."
 
-        val searchKey = if (suffix != null) {
-            "suffix.$priority.$suffix"
-        } else {
-            "suffix.$priority."
-        }
+                val removed = group.nodes.removeIf { node ->
+                    if (suffix != null) {
+                        node.key == searchKey
+                    } else {
+                        node.key.startsWith(searchKey)
+                    }
+                }
 
-        val removed = group.nodes.removeIf { node ->
-            if (suffix != null) {
-                node.key == searchKey
-            } else {
-                node.key.startsWith(searchKey)
+                if (removed) {
+                    manager.saveData()
+                    Universe.get().worlds.values.random().execute {
+                        val msg = if (suffix != null) "suffix '$suffix'" else "all suffixes"
+                        context.sendMessage(MessageFactory.success("Removed $msg for group '$groupName' at priority $priority."))
+                    }
+                } else {
+                    Universe.get().worlds.values.random().execute {
+                        context.sendMessage(MessageFactory.error("No matching suffix found for group '$groupName' at priority $priority."))
+                    }
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Database error during suffix removal: ${e.message}"))
+                }
             }
-        }
-
-        if (removed) {
-            manager.saveData()
-            val msg = if (suffix != null) "suffix '$suffix'" else "all suffixes"
-            context.sendMessage(MessageFactory.success("Removed $msg for group '$groupName' at priority $priority."))
-        } else {
-            context.sendMessage(MessageFactory.error("No matching suffix found for group '$groupName' at priority $priority."))
         }
     }
 }

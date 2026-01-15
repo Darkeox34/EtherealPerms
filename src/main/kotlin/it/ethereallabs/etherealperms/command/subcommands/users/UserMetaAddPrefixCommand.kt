@@ -3,9 +3,11 @@ package it.ethereallabs.etherealperms.command.subcommands.users
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import it.ethereallabs.etherealperms.permissions.models.Node
+import kotlinx.coroutines.launch
 
 class UserMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.command.user.meta.addprefix.desc") {
 
@@ -22,11 +24,23 @@ class UserMetaAddPrefixCommand : CommandBase("addprefix", "etherealperms.command
         val priority = priorityArg.get(context)
         val prefix = prefixArg.get(context)
         val manager = EtherealPerms.permissionManager
-        val user = manager.loadUser(player.uuid, player.username)
 
-        user.nodes.add(Node("prefix.$priority.$prefix"))
-        
-        manager.saveData()
-        context.sendMessage(MessageFactory.success("Added prefix '$prefix' with priority $priority to user '${player.username}'."))
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val user = manager.loadUser(player.uuid, player.username)
+
+                user.nodes.add(Node("prefix.$priority.$prefix"))
+
+                manager.saveData()
+
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.success("Added prefix '$prefix' with priority $priority to user '${player.username}'."))
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to add prefix to user: ${e.message}"))
+                }
+            }
+        }
     }
 }

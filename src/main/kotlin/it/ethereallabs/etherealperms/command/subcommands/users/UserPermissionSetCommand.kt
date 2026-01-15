@@ -3,9 +3,11 @@ package it.ethereallabs.etherealperms.command.subcommands.users
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import it.ethereallabs.etherealperms.permissions.models.Node
+import kotlinx.coroutines.launch
 
 class UserPermissionSetCommand : CommandBase("set", "etherealperms.command.user.permission.set.desc") {
 
@@ -24,12 +26,23 @@ class UserPermissionSetCommand : CommandBase("set", "etherealperms.command.user.
 
         val manager = EtherealPerms.permissionManager
 
-        val user = manager.loadUser(player.uuid, player.username)
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val user = manager.loadUser(player.uuid, player.username)
 
-        user.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
-        user.nodes.add(Node(nodeKey, value))
+                user.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
+                user.nodes.add(Node(nodeKey, value))
 
-        manager.saveData()
-        context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value' for user '${player.username}'."))
+                manager.saveData()
+
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value' for user '${player.username}'."))
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to set permission for user: ${e.message}"))
+                }
+            }
+        }
     }
 }

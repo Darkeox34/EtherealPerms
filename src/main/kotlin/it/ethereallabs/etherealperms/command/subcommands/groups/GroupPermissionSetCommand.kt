@@ -3,9 +3,11 @@ package it.ethereallabs.etherealperms.command.subcommands.groups
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.permissions.models.Node
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
+import kotlinx.coroutines.launch
 
 class GroupPermissionSetCommand : CommandBase("set", "etherealperms.command.group.permission.set.desc") {
 
@@ -30,11 +32,21 @@ class GroupPermissionSetCommand : CommandBase("set", "etherealperms.command.grou
             return
         }
 
-        group.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
-        group.nodes.add(Node(nodeKey, value))
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                group.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
+                group.nodes.add(Node(nodeKey, value))
 
-        manager.saveData()
+                manager.saveData()
 
-        context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value' for group '${group.name}'."))
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value' for group '${group.name}'."))
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to save permission: ${e.message}"))
+                }
+            }
+        }
     }
 }

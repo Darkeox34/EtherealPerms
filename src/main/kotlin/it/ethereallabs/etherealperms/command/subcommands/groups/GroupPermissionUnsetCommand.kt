@@ -3,8 +3,10 @@ package it.ethereallabs.etherealperms.command.subcommands.groups
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
+import kotlinx.coroutines.launch
 
 class GroupPermissionUnsetCommand : CommandBase("unset", "etherealperms.command.group.permission.unset.desc") {
 
@@ -26,8 +28,26 @@ class GroupPermissionUnsetCommand : CommandBase("unset", "etherealperms.command.
             return
         }
 
-        val removed = group.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
-        manager.saveData()
-        context.sendMessage(MessageFactory.success(if (removed) "Permission '$nodeKey' unset." else "Permission not found."))
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val removed = group.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
+
+                if (removed) {
+                    manager.saveData()
+                }
+
+                Universe.get().worlds.values.random().execute {
+                    if (removed) {
+                        context.sendMessage(MessageFactory.success("Permission '$nodeKey' unset for group '${group.name}'."))
+                    } else {
+                        context.sendMessage(MessageFactory.error("Permission '$nodeKey' not found in group '${group.name}'."))
+                    }
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to unset permission: ${e.message}"))
+                }
+            }
+        }
     }
 }

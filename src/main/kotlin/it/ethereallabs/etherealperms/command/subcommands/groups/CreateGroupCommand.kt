@@ -3,8 +3,10 @@ package it.ethereallabs.etherealperms.command.subcommands.groups
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
+import kotlinx.coroutines.launch
 
 class CreateGroupCommand : CommandBase("creategroup", "etherealperms.command.creategroup.desc") {
 
@@ -21,14 +23,26 @@ class CreateGroupCommand : CommandBase("creategroup", "etherealperms.command.cre
 
         val manager = EtherealPerms.permissionManager
 
-        val group = manager.createGroup(groupName)
-        group?.weight = weight
-        manager.saveData()
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val group = manager.createGroup(groupName)
 
-        if (group != null) {
-            context.sendMessage(MessageFactory.success("Group '$groupName' created successfully."))
-        } else {
-            context.sendMessage(MessageFactory.error("Group '$groupName' already exists."))
+                if (group != null) {
+                    group.weight = weight
+                    manager.saveData()
+                    Universe.get().worlds.values.random().execute {
+                        context.sendMessage(MessageFactory.success("Group '$groupName' created successfully."))
+                    }
+                } else {
+                    Universe.get().worlds.values.random().execute {
+                        context.sendMessage(MessageFactory.error("Group '$groupName' already exists."))
+                    }
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to create group: ${e.message}"))
+                }
+            }
         }
     }
 }

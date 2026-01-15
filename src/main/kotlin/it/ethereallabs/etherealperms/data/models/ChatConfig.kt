@@ -1,4 +1,4 @@
 data class Configs(
     val format: String,
-    val groupFormats: Map<String, String>
+    val groupFormats: Map<String, String>,
 )

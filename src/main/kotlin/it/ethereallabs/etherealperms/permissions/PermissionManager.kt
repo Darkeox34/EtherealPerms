@@ -17,7 +17,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     private val groups = ConcurrentHashMap<String, Group>()
     private val users = ConcurrentHashMap<UUID, User>()
 
-    fun reloadData(){
+     suspend fun reloadData(){
         groups.clear()
         loadData()
     }
@@ -25,7 +25,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Loads groups from storage and initializes default group if necessary.
      */
-    fun loadData() {
+    suspend fun loadData() {
         groups.putAll(storage.loadGroups())
         if (groups.isEmpty()) {
             plugin.logger.atInfo().log("No groups found, creating a default group.")
@@ -38,7 +38,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Saves all groups and cached users to storage.
      */
-    fun saveData() {
+    suspend fun saveData() {
         storage.saveGroups(groups)
         users.values.forEach { storage.saveUser(it) }
         plugin.logger.atInfo().log("Saved all permissions data.")
@@ -47,7 +47,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Loads a user from storage or creates a new one if not found.
      */
-    fun loadUser(uuid: UUID, username: String): User {
+    suspend fun loadUser(uuid: UUID, username: String): User {
         val user = storage.loadUser(uuid) ?: User(uuid, username).apply {
             if (groups.containsKey("default")) {
                 nodes.add(Node("group.default"))
@@ -60,7 +60,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Unloads a user from cache, saving their data first.
      */
-    fun unloadUser(uuid: UUID) {
+    suspend fun unloadUser(uuid: UUID) {
         val user = users.remove(uuid)
         if (user != null) {
             storage.saveUser(user)
@@ -88,7 +88,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Scans all users to find those belonging to a specific group.
      */
-    fun getUsersWithGroup(groupName: String): List<String> {
+    suspend fun getUsersWithGroup(groupName: String): List<String> {
         // This scans all user files. For large servers, this should be cached or indexed.
         val allUsers = storage.loadAllUsers()
         return allUsers.filter { user ->
@@ -101,7 +101,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Creates a new group if it doesn't exist.
      */
-    fun createGroup(name: String): Group? {
+    suspend fun createGroup(name: String): Group? {
         if (groups.containsKey(name.lowercase())) {
             return null
         }
@@ -114,7 +114,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Deletes a group.
      */
-    fun deleteGroup(name: String): Boolean {
+    suspend fun deleteGroup(name: String): Boolean {
         if (!groups.containsKey(name.lowercase())) return false
         groups.remove(name.lowercase())
         saveData()
@@ -124,7 +124,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Renames an existing group.
      */
-    fun renameGroup(oldName: String, newName: String): Boolean {
+    suspend fun renameGroup(oldName: String, newName: String): Boolean {
         val group = getGroup(oldName) ?: return false
         if (getGroup(newName) != null) return false
 
@@ -138,7 +138,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
     /**
      * Clones an existing group to a new name.
      */
-    fun cloneGroup(name: String, newName: String): Boolean {
+    suspend fun cloneGroup(name: String, newName: String): Boolean {
         val group = getGroup(name) ?: return false
         if (getGroup(newName) != null) return false
 

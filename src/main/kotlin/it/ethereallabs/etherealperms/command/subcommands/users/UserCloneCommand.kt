@@ -3,8 +3,10 @@ package it.ethereallabs.etherealperms.command.subcommands.users
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
+import kotlinx.coroutines.launch
 
 class UserCloneCommand : CommandBase("clone", "etherealperms.command.user.clone.desc") {
 
@@ -19,14 +21,25 @@ class UserCloneCommand : CommandBase("clone", "etherealperms.command.user.clone.
         val sourcePlayer = sourceArg.get(context)
         val targetPlayer = targetArg.get(context)
         val manager = EtherealPerms.permissionManager
-        
-        val sourceUser = manager.loadUser(sourcePlayer.uuid, sourcePlayer.username)
-        val targetUser = manager.loadUser(targetPlayer.uuid, targetPlayer.username)
 
-        targetUser.nodes.clear()
-        targetUser.nodes.addAll(sourceUser.nodes)
-        
-        manager.saveData()
-        context.sendMessage(MessageFactory.success("Cloned nodes from '${sourcePlayer.username}' to '${targetPlayer.username}'."))
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val sourceUser = manager.loadUser(sourcePlayer.uuid, sourcePlayer.username)
+                val targetUser = manager.loadUser(targetPlayer.uuid, targetPlayer.username)
+
+                targetUser.nodes.clear()
+                targetUser.nodes.addAll(sourceUser.nodes)
+
+                manager.saveData()
+
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.success("Cloned nodes from '${sourcePlayer.username}' to '${targetPlayer.username}'."))
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to clone user data: ${e.message}"))
+                }
+            }
+        }
     }
 }

@@ -22,7 +22,7 @@ import kotlin.io.path.writeText
 class Storage(plugin: EtherealPerms) {
 
     private val dataFolder: Path = plugin.dataDirectory
-    private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+    private val gson: Gson = GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create()
     private val yaml = Yaml()
 
     private val usersDir: Path by lazy { dataFolder.resolve("users") }

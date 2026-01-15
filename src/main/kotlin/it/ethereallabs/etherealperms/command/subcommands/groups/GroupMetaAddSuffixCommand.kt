@@ -3,9 +3,11 @@ package it.ethereallabs.etherealperms.command.subcommands.groups
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import it.ethereallabs.etherealperms.permissions.models.Node
+import kotlinx.coroutines.launch
 
 class GroupMetaAddSuffixCommand : CommandBase("addsuffix", "etherealperms.command.group.meta.addsuffix.desc") {
 
@@ -22,6 +24,7 @@ class GroupMetaAddSuffixCommand : CommandBase("addsuffix", "etherealperms.comman
         val priority = priorityArg.get(context)
         val suffix = suffixArg.get(context)
         val manager = EtherealPerms.permissionManager
+
         val group = manager.getGroup(groupName)
 
         if (group == null) {
@@ -29,9 +32,20 @@ class GroupMetaAddSuffixCommand : CommandBase("addsuffix", "etherealperms.comman
             return
         }
 
-        group.nodes.add(Node("suffix.$priority.$suffix"))
-
-        manager.saveData()
-        context.sendMessage(MessageFactory.success("Added suffix '$suffix' with priority $priority to group '${group.name}'."))
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                group.nodes.add(Node("suffix.$priority.$suffix"))
+                manager.saveData()
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(
+                        MessageFactory.success("Added suffix '$suffix' with priority $priority to group '${group.name}'.")
+                    )
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to save suffix: ${e.message}"))
+                }
+            }
+        }
     }
 }

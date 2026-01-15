@@ -3,9 +3,11 @@ package it.ethereallabs.etherealperms.command.subcommands.groups
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import it.ethereallabs.etherealperms.permissions.models.Node
+import kotlinx.coroutines.launch
 
 class GroupParentAddCommand : CommandBase("add", "etherealperms.command.group.parent.add.desc") {
 
@@ -26,10 +28,21 @@ class GroupParentAddCommand : CommandBase("add", "etherealperms.command.group.pa
             context.sendMessage(MessageFactory.error("Group not found."))
             return
         }
-
-        val parentNode = "group.$parentName"
-        group.nodes.add(Node(parentNode))
-        manager.saveData()
-        context.sendMessage(MessageFactory.success("Added parent '$parentName' to group '${group.name}'."))
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val parentNode = "group.$parentName"
+                group.nodes.add(Node(parentNode))
+                manager.saveData()
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(
+                        MessageFactory.success("Added parent '$parentName' to group '${group.name}'.")
+                    )
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to save inheritance: ${e.message}"))
+                }
+            }
+        }
     }
 }

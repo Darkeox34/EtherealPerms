@@ -3,9 +3,11 @@ package it.ethereallabs.etherealperms.command.subcommands.users
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import it.ethereallabs.etherealperms.permissions.models.Node
+import kotlinx.coroutines.launch
 
 class UserMetaSetPrefixCommand : CommandBase("setprefix", "etherealperms.command.user.meta.setprefix.desc") {
 
@@ -25,26 +27,37 @@ class UserMetaSetPrefixCommand : CommandBase("setprefix", "etherealperms.command
         val prefix = prefixArg.get(context)
         val color = if (colorArg.provided(context)) colorArg.get(context) else null
         val format = if (formatArg.provided(context)) formatArg.get(context) else null
-        
+
         val manager = EtherealPerms.permissionManager
-        val user = manager.loadUser(player.uuid, player.username)
 
-        // Remove all existing prefix nodes
-        user.nodes.removeIf { 
-            it.key.startsWith("prefix.") || 
-            it.key.startsWith("prefix_color.") || 
-            it.key.startsWith("prefix_format.") 
-        }
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val user = manager.loadUser(player.uuid, player.username)
 
-        user.nodes.add(Node("prefix.$priority.$prefix"))
-        if (color != null) {
-            user.nodes.add(Node("prefix_color.$priority.$color"))
+                user.nodes.removeIf {
+                    it.key.startsWith("prefix.") ||
+                            it.key.startsWith("prefix_color.") ||
+                            it.key.startsWith("prefix_format.")
+                }
+
+                user.nodes.add(Node("prefix.$priority.$prefix"))
+                if (color != null) {
+                    user.nodes.add(Node("prefix_color.$priority.$color"))
+                }
+                if (format != null) {
+                    user.nodes.add(Node("prefix_format.$priority.$format"))
+                }
+
+                manager.saveData()
+
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.success("Set prefix '$prefix' (prio: $priority) for user '${player.username}' (cleared old prefixes)."))
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to set user prefix: ${e.message}"))
+                }
+            }
         }
-        if (format != null) {
-            user.nodes.add(Node("prefix_format.$priority.$format"))
-        }
-        
-        manager.saveData()
-        context.sendMessage(MessageFactory.success("Set prefix '$prefix' (prio: $priority) for user '${player.username}' (cleared old prefixes)."))
     }
 }

@@ -3,10 +3,13 @@ package it.ethereallabs.etherealperms.data
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import com.mongodb.client.result.UpdateResult
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.permissions.models.Group
 import it.ethereallabs.etherealperms.permissions.models.Node
 import it.ethereallabs.etherealperms.permissions.models.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
@@ -27,20 +30,24 @@ class FileStorage(plugin: EtherealPerms) : IStorageMethod {
         if (!Files.exists(usersDir)) Files.createDirectories(usersDir)
     }
 
-    override fun loadUser(uuid: UUID): User?{
+    override suspend fun loadUser(uuid: UUID): User? =withContext(Dispatchers.IO){
         val userFile = usersDir.resolve("$uuid.json")
-        if (!userFile.exists()) return null
-        return gson.fromJson(userFile.readText(), User::class.java)
+        if (!userFile.exists()) return@withContext null
+        return@withContext gson.fromJson(userFile.readText(), User::class.java)
     }
 
-    override fun saveUser(user: User) {
-        val userFile = usersDir.resolve("${user.uuid}.json")
-        userFile.writeText(gson.toJson(user))
+    override suspend fun saveUser(user: User): Any = withContext(Dispatchers.IO) {
+        try {
+            val userFile = usersDir.resolve("${user.uuid}.json")
+            userFile.writeText(gson.toJson(user))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    override fun loadAllUsers(): List<User> {
-        if (!Files.exists(usersDir)) return  emptyList()
-        return Files.list(usersDir)
+    override suspend fun loadAllUsers(): List<User> =withContext(Dispatchers.IO){
+        if (!Files.exists(usersDir)) return@withContext  emptyList()
+        return@withContext Files.list(usersDir)
             .filter { it.toString().endsWith(".json") }
             .map { path ->
                 gson.fromJson(path.readText(), User::class.java)
@@ -48,25 +55,19 @@ class FileStorage(plugin: EtherealPerms) : IStorageMethod {
             .toList()
     }
 
-    override fun loadGroups(): MutableMap<String, Group> {
-        if (!groupsFile.exists()) return mutableMapOf()
+    override suspend fun loadGroups(): MutableMap<String, Group> =withContext(Dispatchers.IO){
+        if (!groupsFile.exists()) return@withContext mutableMapOf()
         val type = object : TypeToken<MutableMap<String, Group>>() {}.type
-        return gson.fromJson(groupsFile.readText(), type)
+        return@withContext gson.fromJson(groupsFile.readText(), type)
     }
 
-    override fun saveGroups(groups: Map<String, Group>) {
+    override suspend fun saveGroups(groups: Map<String, Group>) =withContext(Dispatchers.IO){
         groupsFile.writeText(gson.toJson(groups))
     }
 
-    override fun loadDefaultGroup(): Group {
-        return Group("default", 0).apply {
+    override suspend fun loadDefaultGroup(): Group =withContext(Dispatchers.IO){
+        return@withContext Group("default", 0).apply {
             nodes.add(Node("etherealperms.default", true))
         }
-    }
-
-    override fun sync() {
-    }
-
-    override fun syncUpload() {
     }
 }

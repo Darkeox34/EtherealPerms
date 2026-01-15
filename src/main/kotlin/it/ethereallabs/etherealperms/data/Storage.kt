@@ -4,6 +4,9 @@ import Configs
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.permissions.models.Group
 import it.ethereallabs.etherealperms.permissions.models.User
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.yaml.snakeyaml.Yaml
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,6 +16,8 @@ class Storage(private val plugin: EtherealPerms) {
 
     private val configFile: Path by lazy { plugin.dataDirectory.resolve("config.yml") }
     private val yaml = Yaml()
+
+    val storageScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     @Volatile
     private var configs: Configs? = null
@@ -79,12 +84,12 @@ class Storage(private val plugin: EtherealPerms) {
         return Files.newInputStream(configFile).use { yaml.load(it) }
     }
 
-    fun loadUser(uuid: UUID): User? = storageMethod.loadUser(uuid)
-    fun saveUser(user: User) = storageMethod.saveUser(user)
-    fun loadAllUsers(): List<User> = storageMethod.loadAllUsers()
-    fun loadGroups(): MutableMap<String, Group> = storageMethod.loadGroups()
-    fun saveGroups(groups: Map<String, Group>) = storageMethod.saveGroups(groups)
-    fun loadDefaultGroup(): Group = storageMethod.loadDefaultGroup()
+    suspend fun loadUser(uuid: UUID): User? = storageMethod.loadUser(uuid)
+    suspend fun saveUser(user: User) = storageMethod.saveUser(user)
+    suspend fun loadAllUsers(): List<User> = storageMethod.loadAllUsers()
+    suspend fun loadGroups(): MutableMap<String, Group> = storageMethod.loadGroups()
+    suspend fun saveGroups(groups: Map<String, Group>) = storageMethod.saveGroups(groups)
+    suspend fun loadDefaultGroup(): Group = storageMethod.loadDefaultGroup()
 
     fun getConfigs(): Configs {
         return configs ?: loadConfigs()
@@ -110,9 +115,7 @@ class Storage(private val plugin: EtherealPerms) {
         return config
     }
 
-    fun sync() {
-
-
+    suspend fun sync() {
         if (storageMethod is FileStorage) {
             plugin.logger.atWarning().log("Sync is not available for local file storage.")
             return
@@ -134,7 +137,7 @@ class Storage(private val plugin: EtherealPerms) {
         plugin.logger.atInfo().log("Sync complete.")
     }
 
-    fun syncUpload() {
+    suspend fun syncUpload() {
         if (storageMethod is FileStorage) {
             plugin.logger.atWarning().log("Sync upload is not available for local file storage.")
             return

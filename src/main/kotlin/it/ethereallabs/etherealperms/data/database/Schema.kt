@@ -13,7 +13,6 @@ object NodesTable : IntIdTable("ep_nodes") {
     val key = varchar("key", 255)
     val value = bool("value")
     val expiry = long("expiry").nullable()
-    // Context is not directly supported here for simplicity, would require a separate table
 }
 
 object GroupNodesTable : Table("ep_group_nodes") {

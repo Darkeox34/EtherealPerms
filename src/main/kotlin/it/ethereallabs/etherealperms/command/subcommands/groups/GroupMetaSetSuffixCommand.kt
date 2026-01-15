@@ -3,9 +3,11 @@ package it.ethereallabs.etherealperms.command.subcommands.groups
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import it.ethereallabs.etherealperms.permissions.models.Node
+import kotlinx.coroutines.launch
 
 class GroupMetaSetSuffixCommand : CommandBase("setsuffix", "etherealperms.command.group.meta.setsuffix.desc") {
 
@@ -23,6 +25,7 @@ class GroupMetaSetSuffixCommand : CommandBase("setsuffix", "etherealperms.comman
         val suffix = suffixArg.get(context)
 
         val manager = EtherealPerms.permissionManager
+
         val group = manager.getGroup(groupName)
 
         if (group == null) {
@@ -30,11 +33,27 @@ class GroupMetaSetSuffixCommand : CommandBase("setsuffix", "etherealperms.comman
             return
         }
 
-        group.nodes.removeIf { it.key.startsWith("suffix.") || it.key.startsWith("suffix_color.") || it.key.startsWith("suffix_format.") }
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                group.nodes.removeIf {
+                    it.key.startsWith("suffix.") ||
+                            it.key.startsWith("suffix_color.") ||
+                            it.key.startsWith("suffix_format.")
+                }
 
-        group.nodes.add(Node("suffix.$priority.$suffix"))
+                group.nodes.add(Node("suffix.$priority.$suffix"))
+                manager.saveData()
 
-        manager.saveData()
-        context.sendMessage(MessageFactory.success("Set suffix '$suffix' (prio: $priority) for group '${group.name}' (cleared old suffixes)."))
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(
+                        MessageFactory.success("Set suffix '$suffix' (prio: $priority) for group '${group.name}' (cleared old suffixes).")
+                    )
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to update group suffix: ${e.message}"))
+                }
+            }
+        }
     }
 }

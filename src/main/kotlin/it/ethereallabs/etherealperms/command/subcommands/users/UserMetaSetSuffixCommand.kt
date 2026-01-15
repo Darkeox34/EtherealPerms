@@ -3,9 +3,11 @@ package it.ethereallabs.etherealperms.command.subcommands.users
 import com.hypixel.hytale.server.core.command.system.CommandContext
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import it.ethereallabs.etherealperms.permissions.models.Node
+import kotlinx.coroutines.launch
 
 class UserMetaSetSuffixCommand : CommandBase("setsuffix", "etherealperms.command.user.meta.setsuffix.desc") {
 
@@ -25,26 +27,37 @@ class UserMetaSetSuffixCommand : CommandBase("setsuffix", "etherealperms.command
         val suffix = suffixArg.get(context)
         val color = if (colorArg.provided(context)) colorArg.get(context) else null
         val format = if (formatArg.provided(context)) formatArg.get(context) else null
-        
+
         val manager = EtherealPerms.permissionManager
-        val user = manager.loadUser(player.uuid, player.username)
 
-        // Remove all existing suffix nodes
-        user.nodes.removeIf { 
-            it.key.startsWith("suffix.") || 
-            it.key.startsWith("suffix_color.") || 
-            it.key.startsWith("suffix_format.") 
-        }
+        EtherealPerms.storage.storageScope.launch {
+            try {
+                val user = manager.loadUser(player.uuid, player.username)
 
-        user.nodes.add(Node("suffix.$priority.$suffix"))
-        if (color != null) {
-            user.nodes.add(Node("suffix_color.$priority.$color"))
+                user.nodes.removeIf {
+                    it.key.startsWith("suffix.") ||
+                            it.key.startsWith("suffix_color.") ||
+                            it.key.startsWith("suffix_format.")
+                }
+
+                user.nodes.add(Node("suffix.$priority.$suffix"))
+                if (color != null) {
+                    user.nodes.add(Node("suffix_color.$priority.$color"))
+                }
+                if (format != null) {
+                    user.nodes.add(Node("suffix_format.$priority.$format"))
+                }
+
+                manager.saveData()
+
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.success("Set suffix '$suffix' (prio: $priority) for user '${player.username}' (cleared old suffixes)."))
+                }
+            } catch (e: Exception) {
+                Universe.get().worlds.values.random().execute {
+                    context.sendMessage(MessageFactory.error("Failed to set user suffix: ${e.message}"))
+                }
+            }
         }
-        if (format != null) {
-            user.nodes.add(Node("suffix_format.$priority.$format"))
-        }
-        
-        manager.saveData()
-        context.sendMessage(MessageFactory.success("Set suffix '$suffix' (prio: $priority) for user '${player.username}' (cleared old suffixes)."))
     }
 }

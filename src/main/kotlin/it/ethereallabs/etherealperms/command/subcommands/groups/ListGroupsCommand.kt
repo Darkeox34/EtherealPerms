@@ -12,7 +12,7 @@ class ListGroupsCommand : CommandBase("listgroups", "etherealperms.command.listg
     }
 
     override fun executeSync(context: CommandContext) {
-        val groups = EtherealPerms.instance.permissionManager.getAllGroups()
+        val groups = EtherealPerms.permissionManager.getAllGroups()
         val groupNames = groups.joinToString(", ") { it.name }
 
         context.sendMessage(MessageFactory.info("Groups (${groups.size}): $groupNames"))

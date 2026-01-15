@@ -10,7 +10,7 @@ class UserMetaRemoveSuffixCommand : CommandBase("removesuffix", "etherealperms.c
 
     private val playerArg = withRequiredArg("player", "Target player", ArgTypes.PLAYER_REF)
     private val priorityArg = withRequiredArg("priority", "Suffix priority", ArgTypes.INTEGER)
-    private val suffixArg = withRequiredArg("suffix", "Suffix", ArgTypes.STRING)
+    private val suffixArg = withOptionalArg("suffix", "Suffix", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.user.meta.removesuffix")
@@ -20,21 +20,30 @@ class UserMetaRemoveSuffixCommand : CommandBase("removesuffix", "etherealperms.c
         val player = playerArg.get(context)
         val priority = priorityArg.get(context)
         val suffix = suffixArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
 
         val user = manager.loadUser(player.uuid, player.username)
-        
-        val removed = user.nodes.removeIf { 
-            it.key.startsWith("suffix.$priority.$suffix") ||
-            it.key.startsWith("suffix_color.$priority.$suffix") ||
-            it.key.startsWith("suffix_format.$priority.$suffix")
+
+        val searchKey = if (suffix != null) {
+            "suffix.$priority.$suffix"
+        } else {
+            "suffix.$priority."
+        }
+
+        val removed = user.nodes.removeIf { node ->
+            if (suffix != null) {
+                node.key == searchKey
+            } else {
+                node.key.startsWith(searchKey)
+            }
         }
 
         if (removed) {
             manager.saveData()
-            context.sendMessage(MessageFactory.success("Removed suffix $suffix for user '${player.username}' at priority $priority."))
+            val msg = if (suffix != null) "suffix '$suffix'" else "all suffixes"
+            context.sendMessage(MessageFactory.success("Removed $msg for user '${user.username}' at priority $priority."))
         } else {
-            context.sendMessage(MessageFactory.error("No suffix found $suffix for user '${player.username}' at priority $priority."))
+            context.sendMessage(MessageFactory.error("No matching suffix found for user '${user.username}' at priority $priority."))
         }
     }
 }

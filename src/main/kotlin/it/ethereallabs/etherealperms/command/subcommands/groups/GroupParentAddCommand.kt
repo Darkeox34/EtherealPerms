@@ -19,7 +19,7 @@ class GroupParentAddCommand : CommandBase("add", "etherealperms.command.group.pa
     override fun executeSync(context: CommandContext) {
         val groupName = groupArg.get(context)
         val parentName = parentArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val group = manager.getGroup(groupName)
 
         if (group == null) {

@@ -7,8 +7,6 @@ class UserMetaCommand : AbstractCommandCollection("meta", "etherealperms.command
         addSubCommand(UserMetaSetCommand())
         addSubCommand(UserMetaAddPrefixCommand())
         addSubCommand(UserMetaSetPrefixCommand())
-        addSubCommand(UserMetaSetPlayerColorCommand())
-        addSubCommand(UserMetaSetChatColorCommand())
         addSubCommand(UserMetaAddSuffixCommand())
         addSubCommand(UserMetaSetSuffixCommand())
         addSubCommand(UserMetaRemoveSuffixCommand())

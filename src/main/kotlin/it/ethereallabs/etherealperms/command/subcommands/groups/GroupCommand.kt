@@ -7,7 +7,6 @@ class GroupCommand : AbstractCommandCollection("group", "etherealperms.command.g
     init {
         addSubCommand(GroupInfoCommand())
         addSubCommand(GroupPermissionCommand())
-        addSubCommand(DeleteGroupCommand())
         addSubCommand(GroupParentCommand())
         addSubCommand(GroupMetaCommand())
         addSubCommand(GroupSetWeightCommand())

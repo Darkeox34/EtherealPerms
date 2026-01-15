@@ -19,7 +19,7 @@ class GroupRenameCommand : CommandBase("rename", "etherealperms.command.group.re
         val groupName = groupArg.get(context)
         val newName = newNameArg.get(context)
 
-        if (EtherealPerms.instance.permissionManager.renameGroup(groupName, newName)) {
+        if (EtherealPerms.permissionManager.renameGroup(groupName, newName)) {
             context.sendMessage(MessageFactory.success("Group renamed from '$groupName' to '$newName'."))
         } else {
             context.sendMessage(MessageFactory.error("Could not rename group. Check if it exists or if new name is taken."))

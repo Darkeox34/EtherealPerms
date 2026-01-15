@@ -1,7 +1,7 @@
 package it.ethereallabs.etherealperms.permissions
 
 import it.ethereallabs.etherealperms.EtherealPerms
-import it.ethereallabs.etherealperms.data.Storage
+import it.ethereallabs.etherealperms.EtherealPerms.Companion.storage
 import it.ethereallabs.etherealperms.permissions.models.ChatMeta
 import it.ethereallabs.etherealperms.permissions.models.Group
 import it.ethereallabs.etherealperms.permissions.models.Node
@@ -14,9 +14,13 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class PermissionManager(private val plugin: EtherealPerms) {
 
-    private val storage = Storage(plugin)
     private val groups = ConcurrentHashMap<String, Group>()
     private val users = ConcurrentHashMap<UUID, User>()
+
+    fun reloadData(){
+        groups.clear()
+        loadData()
+    }
 
     /**
      * Loads groups from storage and initializes default group if necessary.
@@ -64,6 +68,18 @@ class PermissionManager(private val plugin: EtherealPerms) {
     }
 
     fun getUser(uuid: UUID): User? = users[uuid]
+
+    fun getUserPrimaryGroup(uuid: UUID): Group? {
+        val user = getUser(uuid) ?: return null
+        return user.nodes
+            .asSequence()
+            .filter { it.key.startsWith("group.", ignoreCase = true) }
+            .mapNotNull { node ->
+                getGroup(node.key.substringAfter("group."))
+            }
+            .maxByOrNull { it.weight }
+    }
+
 
     fun getGroup(name: String): Group? = groups[name.lowercase()]
 
@@ -133,35 +149,17 @@ class PermissionManager(private val plugin: EtherealPerms) {
     }
 
     /**
-     * Retrieves chat metadata (prefix, suffix, colors, formats) for a user.
+     * Retrieves chat metadata (prefix, suffix) for a user.
      */
     fun getChatMeta(uuid: UUID): ChatMeta {
-        val user = getUser(uuid) ?: return ChatMeta("", null, null, "", null, null, null, null, null, null)
+        val user = getUser(uuid) ?: return ChatMeta("", "")
         val allNodes = getEffectiveNodes(user)
 
         var prefix = ""
         var prefixPriority = Int.MIN_VALUE
-        var prefixColor: String? = null
-        var prefixColorPriority = Int.MIN_VALUE
-        var prefixFormat: String? = null
-        var prefixFormatPriority = Int.MIN_VALUE
 
         var suffix = ""
         var suffixPriority = Int.MIN_VALUE
-        var suffixColor: String? = null
-        var suffixColorPriority = Int.MIN_VALUE
-        var suffixFormat: String? = null
-        var suffixFormatPriority = Int.MIN_VALUE
-
-        var usernameColor: String? = null
-        var usernameColorPriority = Int.MIN_VALUE
-        var usernameFormat: String? = null
-        var usernameFormatPriority = Int.MIN_VALUE
-
-        var chatColor: String? = null
-        var chatColorPriority = Int.MIN_VALUE
-        var chatFormat: String? = null
-        var chatFormatPriority = Int.MIN_VALUE
 
         for (node in allNodes) {
             val key = node.key
@@ -174,25 +172,8 @@ class PermissionManager(private val plugin: EtherealPerms) {
                         prefix = parts[2]
                     }
                 }
-            } else if (key.startsWith("prefix_color.", ignoreCase = true)) {
-                val parts = key.split(".", limit = 3)
-                if (parts.size == 3) {
-                    val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio >= prefixColorPriority) {
-                        prefixColorPriority = prio
-                        prefixColor = parts[2]
-                    }
-                }
-            } else if (key.startsWith("prefix_format.", ignoreCase = true)) {
-                val parts = key.split(".", limit = 3)
-                if (parts.size == 3) {
-                    val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio >= prefixFormatPriority) {
-                        prefixFormatPriority = prio
-                        prefixFormat = parts[2]
-                    }
-                }
-            } else if (key.startsWith("suffix.", ignoreCase = true)) {
+            }
+            else if (key.startsWith("suffix.", ignoreCase = true)) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
@@ -201,73 +182,11 @@ class PermissionManager(private val plugin: EtherealPerms) {
                         suffix = parts[2]
                     }
                 }
-            } else if (key.startsWith("suffix_color.", ignoreCase = true)) {
-                val parts = key.split(".", limit = 3)
-                if (parts.size == 3) {
-                    val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio >= suffixColorPriority) {
-                        suffixColorPriority = prio
-                        suffixColor = parts[2]
-                    }
-                }
-            } else if (key.startsWith("suffix_format.", ignoreCase = true)) {
-                val parts = key.split(".", limit = 3)
-                if (parts.size == 3) {
-                    val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio >= suffixFormatPriority) {
-                        suffixFormatPriority = prio
-                        suffixFormat = parts[2]
-                    }
-                }
-            } else if (key.startsWith("username_color.", ignoreCase = true)) {
-                val parts = key.split(".", limit = 3)
-                if (parts.size == 3) {
-                    val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio >= usernameColorPriority) {
-                        usernameColorPriority = prio
-                        usernameColor = parts[2]
-                    }
-                }
-            } else if (key.startsWith("username_format.", ignoreCase = true)) {
-                val parts = key.split(".", limit = 3)
-                if (parts.size == 3) {
-                    val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio >= usernameFormatPriority) {
-                        usernameFormatPriority = prio
-                        usernameFormat = parts[2]
-                    }
-                }
-            } else if (key.startsWith("chat_color.", ignoreCase = true)) {
-                val parts = key.split(".", limit = 3)
-                if (parts.size == 3) {
-                    val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio >= chatColorPriority) {
-                        chatColorPriority = prio
-                        chatColor = parts[2]
-                    }
-                }
-            } else if (key.startsWith("chat_format.", ignoreCase = true)) {
-                val parts = key.split(".", limit = 3)
-                if (parts.size == 3) {
-                    val prio = parts[1].toIntOrNull() ?: 0
-                    if (prio >= chatFormatPriority) {
-                        chatFormatPriority = prio
-                        chatFormat = parts[2]
-                    }
-                }
             }
         }
         return ChatMeta(
             prefix,
-            prefixColor,
-            prefixFormat,
-            suffix,
-            suffixColor,
-            suffixFormat,
-            usernameColor,
-            usernameFormat,
-            chatColor,
-            chatFormat
+            suffix
         )
     }
 

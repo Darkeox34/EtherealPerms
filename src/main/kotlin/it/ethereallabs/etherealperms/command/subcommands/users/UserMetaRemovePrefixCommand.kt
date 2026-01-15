@@ -10,7 +10,7 @@ class UserMetaRemovePrefixCommand : CommandBase("removeprefix", "etherealperms.c
 
     private val playerArg = withRequiredArg("player", "Target player", ArgTypes.PLAYER_REF)
     private val priorityArg = withRequiredArg("priority", "Prefix priority", ArgTypes.INTEGER)
-    private val prefixArg = withRequiredArg("prefix", "Prefix", ArgTypes.STRING)
+    private val prefixArg = withOptionalArg("prefix", "Prefix", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.user.meta.removeprefix")
@@ -20,21 +20,30 @@ class UserMetaRemovePrefixCommand : CommandBase("removeprefix", "etherealperms.c
         val player = playerArg.get(context)
         val priority = priorityArg.get(context)
         val prefix = prefixArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
 
         val user = manager.loadUser(player.uuid, player.username)
 
-        val removed = user.nodes.removeIf {
-            it.key.startsWith("prefix.$priority.$prefix") ||
-                    it.key.startsWith("prefix_color.$priority.$prefix") ||
-                    it.key.startsWith("prefix_format.$priority.$prefix")
+        val searchKey = if (prefix != null) {
+            "prefix.$priority.$prefix"
+        } else {
+            "prefix.$priority."
+        }
+
+        val removed = user.nodes.removeIf { node ->
+            if (prefix != null) {
+                node.key == searchKey
+            } else {
+                node.key.startsWith(searchKey)
+            }
         }
 
         if (removed) {
             manager.saveData()
-            context.sendMessage(MessageFactory.success("Removed prefix $prefix for user '${player.username}' at priority $priority."))
+            val msg = if (prefix != null) "prefix '$prefix'" else "all prefixes"
+            context.sendMessage(MessageFactory.success("Removed $msg for user '${user.username}' at priority $priority."))
         } else {
-            context.sendMessage(MessageFactory.error("No prefix found $prefix for user '${player.username}' at priority $priority."))
+            context.sendMessage(MessageFactory.error("No matching prefix found for user '${user.username}' at priority $priority."))
         }
     }
 }

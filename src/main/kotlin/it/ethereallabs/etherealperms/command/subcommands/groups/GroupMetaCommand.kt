@@ -7,8 +7,6 @@ class GroupMetaCommand : AbstractCommandCollection("meta", "etherealperms.comman
         addSubCommand(GroupMetaSetCommand())
         addSubCommand(GroupMetaAddPrefixCommand())
         addSubCommand(GroupMetaSetPrefixCommand())
-        addSubCommand(GroupMetaSetPlayerColorCommand())
-        addSubCommand(GroupMetaSetChatColorCommand())
         addSubCommand(GroupMetaAddSuffixCommand())
         addSubCommand(GroupMetaSetSuffixCommand())
         addSubCommand(GroupMetaRemovePrefixCommand())

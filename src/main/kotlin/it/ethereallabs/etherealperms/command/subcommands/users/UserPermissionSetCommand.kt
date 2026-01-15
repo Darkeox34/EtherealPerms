@@ -22,7 +22,7 @@ class UserPermissionSetCommand : CommandBase("set", "etherealperms.command.user.
         val nodeKey = nodeArg.get(context)
         val value = if (valueArg.provided(context)) valueArg.get(context) else true
 
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
 
         val user = manager.loadUser(player.uuid, player.username)
 

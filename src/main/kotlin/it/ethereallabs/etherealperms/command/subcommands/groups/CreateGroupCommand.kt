@@ -19,7 +19,7 @@ class CreateGroupCommand : CommandBase("creategroup", "etherealperms.command.cre
         val groupName = groupNameArg.get(context)
         val weight = if (weightArg.provided(context)) weightArg.get(context) else 0
 
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
 
         val group = manager.createGroup(groupName)
         group?.weight = weight

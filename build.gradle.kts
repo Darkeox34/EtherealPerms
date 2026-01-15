@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "it.ethereallabs"
-version = "1.0.1"
+version = "1.0.2"
 
 repositories {
     mavenCentral()
@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     compileOnly(files("libs/HytaleServer.jar"))
+    implementation("org.yaml:snakeyaml:2.3")
 }
 
 kotlin {

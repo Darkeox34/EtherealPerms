@@ -21,11 +21,9 @@ class UserMetaSetCommand : CommandBase("set", "etherealperms.command.user.meta.s
         val player = playerArg.get(context)
         val key = keyArg.get(context)
         val value = valueArg.get(context)
-        val manager = EtherealPerms.instance.permissionManager
+        val manager = EtherealPerms.permissionManager
         val user = manager.loadUser(player.uuid, player.username)
 
-        // Remove existing meta with same key if necessary, or just add (LuckPerms allows multiple)
-        // For simplicity here we just add.
         user.nodes.add(Node("meta.$key.$value"))
         
         manager.saveData()

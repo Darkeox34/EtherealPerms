@@ -16,7 +16,7 @@ class DeleteGroupCommand : CommandBase("deletegroup", "etherealperms.command.del
 
     override fun executeSync(context: CommandContext) {
         val groupName = groupNameArg.get(context)
-        val success = EtherealPerms.instance.permissionManager.deleteGroup(groupName)
+        val success = EtherealPerms.permissionManager.deleteGroup(groupName)
 
         if (success) {
             context.sendMessage(MessageFactory.success("Group '$groupName' deleted."))

@@ -12,7 +12,8 @@ class ReloadConfigCommand : CommandBase("reloadconfig", "etherealperms.command.r
     }
 
     override fun executeSync(context: CommandContext) {
-        EtherealPerms.instance.permissionManager.loadData()
+        EtherealPerms.permissionManager.reloadData()
+        EtherealPerms.storage.reloadConfigs()
         context.sendMessage(MessageFactory.success("Configuration and data reloaded."))
     }
 }

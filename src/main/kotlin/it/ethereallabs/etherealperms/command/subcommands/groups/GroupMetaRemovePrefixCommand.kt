@@ -10,7 +10,7 @@ class GroupMetaRemovePrefixCommand : CommandBase("removeprefix", "etherealperms.
 
     private val groupArg = withRequiredArg("group", "Target group", ArgTypes.STRING)
     private val priorityArg = withRequiredArg("priority", "Prefix priority", ArgTypes.INTEGER)
-    private val prefixArg = withRequiredArg("prefix", "Prefix", ArgTypes.STRING)
+    private val prefixArg = withOptionalArg("prefix", "Prefix", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.group.meta.removeprefix")
@@ -19,7 +19,7 @@ class GroupMetaRemovePrefixCommand : CommandBase("removeprefix", "etherealperms.
     override fun executeSync(context: CommandContext) {
         val groupName = groupArg.get(context)
         val priority = priorityArg.get(context)
-        val prefix = prefixArg.get(context)
+        val prefix = prefixArg.get(context) // Ottieni il valore o null
         val manager = EtherealPerms.permissionManager
 
         val group = manager.getGroup(groupName)
@@ -27,18 +27,27 @@ class GroupMetaRemovePrefixCommand : CommandBase("removeprefix", "etherealperms.
             context.sendMessage(MessageFactory.error("Group '$groupName' does not exist."))
             return
         }
-        
-        val removed = group.nodes.removeIf { 
-            it.key.startsWith("prefix.$priority.$prefix") ||
-            it.key.startsWith("prefix_color.$priority.$prefix") ||
-            it.key.startsWith("prefix_format.$priority.$prefix")
+
+        val searchKey = if (prefix != null) {
+            "prefix.$priority.$prefix"
+        } else {
+            "prefix.$priority."
+        }
+
+        val removed = group.nodes.removeIf { node ->
+            if (prefix != null) {
+                node.key == searchKey
+            } else {
+                node.key.startsWith(searchKey)
+            }
         }
 
         if (removed) {
             manager.saveData()
-            context.sendMessage(MessageFactory.success("Removed prefix $prefix for group '$groupName' at priority $priority."))
+            val msg = if (prefix != null) "prefix '$prefix'" else "all prefixes"
+            context.sendMessage(MessageFactory.success("Removed $msg for group '$groupName' at priority $priority."))
         } else {
-            context.sendMessage(MessageFactory.error("No prefix $prefix found for group '$groupName' at priority $priority."))
+            context.sendMessage(MessageFactory.error("No matching prefix found for group '$groupName' at priority $priority."))
         }
     }
 }

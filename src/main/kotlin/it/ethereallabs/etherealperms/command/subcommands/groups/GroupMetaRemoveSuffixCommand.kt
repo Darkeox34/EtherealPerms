@@ -10,7 +10,7 @@ class GroupMetaRemoveSuffixCommand : CommandBase("removesuffix", "etherealperms.
 
     private val groupArg = withRequiredArg("group", "Target group", ArgTypes.STRING)
     private val priorityArg = withRequiredArg("priority", "Suffix priority", ArgTypes.INTEGER)
-    private val suffixArg = withRequiredArg("suffix", "Suffix", ArgTypes.STRING)
+    private val suffixArg = withOptionalArg("suffix", "Suffix", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.group.meta.removesuffix")
@@ -27,18 +27,27 @@ class GroupMetaRemoveSuffixCommand : CommandBase("removesuffix", "etherealperms.
             context.sendMessage(MessageFactory.error("Group '$groupName' does not exist."))
             return
         }
-        
-        val removed = group.nodes.removeIf { 
-            it.key.startsWith("suffix.$priority.$suffix") ||
-            it.key.startsWith("suffix_color.$priority.$suffix") ||
-            it.key.startsWith("suffix_format.$priority.$suffix")
+
+        val searchKey = if (suffix != null) {
+            "suffix.$priority.$suffix"
+        } else {
+            "suffix.$priority."
+        }
+
+        val removed = group.nodes.removeIf { node ->
+            if (suffix != null) {
+                node.key == searchKey
+            } else {
+                node.key.startsWith(searchKey)
+            }
         }
 
         if (removed) {
             manager.saveData()
-            context.sendMessage(MessageFactory.success("Removed suffix $suffix for group '$groupName' at priority $priority."))
+            val msg = if (suffix != null) "suffix '$suffix'" else "all suffixes"
+            context.sendMessage(MessageFactory.success("Removed $msg for group '$groupName' at priority $priority."))
         } else {
-            context.sendMessage(MessageFactory.error("No suffix $suffix found for group '$groupName' at priority $priority."))
+            context.sendMessage(MessageFactory.error("No matching suffix found for group '$groupName' at priority $priority."))
         }
     }
 }

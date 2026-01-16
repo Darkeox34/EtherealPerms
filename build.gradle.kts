@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     kotlin("jvm") version "2.2.20"
     kotlin("plugin.serialization") version "2.2.20"
@@ -53,9 +56,19 @@ tasks.jar {
     archiveClassifier.set("plain")
 }
 
+val env = Properties().apply {
+    val envFile = file(".env")
+    if (envFile.exists()) {
+        load(FileInputStream(envFile))
+    }
+}
+
+val modsPath = env.getProperty("HYTALE_MODS_DIR") ?: "build/libs"
+
 tasks.shadowJar {
     archiveClassifier.set("")
-    destinationDirectory.set(file("C:/Users/antonio/Desktop/Hytale Server/Folder/Server/mods"))
+    destinationDirectory.set(file(modsPath))
+    minimize()
     relocate("org.bson", "it.ethereallabs.internal.bson")
     relocate("com.mongodb", "it.ethereallabs.internal.mongodb")
 }

@@ -15,18 +15,17 @@ Button {
     Anchor: (Width: 120);
     LayoutMode: Left;
 
-    // Checkbox Value
     Group {
       Anchor: (Width: 40);
       LayoutMode: Left;
       $C.@CheckBox #Value {
-        Anchor: (Width: 26, Height: 26, Top: 4);
+        Anchor: (Width: 26, Height: 26, Top: 10);
       }
     }
 
     $C.@CancelTextButton #DeletePermBtn {
       Text: "X";
-      Anchor: (Width: 35, Height: 35);
+      Anchor: (Width: 35, Height: 35, Left: 40);
     }
   }
 }

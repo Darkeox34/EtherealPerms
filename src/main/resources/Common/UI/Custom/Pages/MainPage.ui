@@ -103,11 +103,6 @@ $C.@PageOverlay {
             Text: "+";
             Anchor: (Width: 40, Left: 10);
           }
-
-          $C.@TextButton #SaveButton {
-            Text: "SAVE";
-            Anchor: (Width: 100, Left: 4);
-          }
         }
 
         Group #TableHeader {
@@ -127,6 +122,7 @@ $C.@PageOverlay {
 
             Label {
               Text: "Value";
+              Anchor: (Right:10);
               Style: (TextColor: #94a7bb, RenderBold: true, FontSize: 14);
             }
           }
@@ -145,7 +141,14 @@ $C.@PageOverlay {
 
           $C.@SecondaryTextButton #ExitButton {
             Text: "QUIT";
-            Anchor: (Width: 120);
+            Anchor: (Width: 100, Right: 10);
+          }
+
+          Group { Anchor: (Width: 10); }
+
+          $C.@TextButton #SaveButton {
+            Text: "SAVE";
+            Anchor: (Width: 100);
           }
         }
       }
@@ -197,5 +200,17 @@ $C.@PageOverlay {
     }
   }
 }
+
+Group #NotificationPopup {
+    Visible: false;
+    Anchor: (Top: 30, Right: 30, Width: 250, Height: 30);
+    LayoutMode: Center;
+    Background: #28a745;
+
+    Label #NotificationMsg {
+      Text: "Operation Successful";
+      Style: (FontSize: 16, TextColor: #ffffff, RenderBold: true);
+    }
+  }
 
 $C.@BackButton {}

@@ -20,16 +20,11 @@ Button {
   Group {
     LayoutMode: Left;
     Anchor: (Height: 30, Width: 80);
-    Padding: (Top: 7);
+    Padding: (Top: 4);
 
-    $C.@SecondaryTextButton #EditBtn {
-      Text: "R";
-      Anchor: (Width: 35, Height: 30);
-    }
-
-    $C.@SecondaryTextButton #DeleteBtn {
+    $C.@CancelTextButton #DeleteBtn {
       Text: "X";
-      Anchor: (Width: 35, Height: 30, Left: 5);
+      Anchor: (Width: 35, Height: 30, Left: 35);
     }
   }
 }

@@ -18,6 +18,10 @@ class EditorCommand : AbstractPlayerCommand(
     false
 ) {
 
+    init {
+        requirePermission("etherealperms.editor")
+    }
+
     override fun execute(
         ctx: CommandContext,
         store: Store<EntityStore>,
@@ -26,13 +30,6 @@ class EditorCommand : AbstractPlayerCommand(
         world: World
     ) {
         val player = store.getComponent(ref, Player.getComponentType())
-
-        /*val page = MainPage(
-            playerRef = playerRef,
-            playersOnline = 42,
-            questCount = 7,
-            uptime = "3h 24m"
-        )*/
 
         val page = MainPage(playerRef, CustomPageLifetime.CanDismissOrCloseThroughInteraction)
 

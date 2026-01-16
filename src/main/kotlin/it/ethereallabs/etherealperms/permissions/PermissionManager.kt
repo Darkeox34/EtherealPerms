@@ -51,12 +51,22 @@ class PermissionManager(private val plugin: EtherealPerms) {
      */
     suspend fun loadUser(uuid: UUID, username: String): User {
         val user = storage.loadUser(uuid) ?: User(uuid, username).apply {
-            if (groups.containsKey("default")) {
-                nodes.add(Node("group.default"))
+            val defaultGroup = getDefaultGroup()
+            if(defaultGroup != null) {
+                nodes.add(Node("group.${defaultGroup.name}"))
+            }
+            else{
+                EtherealPerms.instance.logger.atSevere().log("No default group found! Please add the node etherealperms.default to a group to set it as default.")
             }
         }
         users[uuid] = user
         return user
+    }
+
+    fun getDefaultGroup(): Group?{
+        return groups.values.find{
+            it.nodes.contains(Node("etherealperms.default"))
+        }
     }
 
     /**

@@ -1,24 +1,20 @@
 package it.ethereallabs.etherealperms
 
+import com.hypixel.hytale.server.core.command.system.CommandManager
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent
+import com.hypixel.hytale.server.core.permissions.PermissionHolder
 import com.hypixel.hytale.server.core.permissions.PermissionsModule
-import com.hypixel.hytale.server.core.permissions.provider.PermissionProvider
 import com.hypixel.hytale.server.core.plugin.JavaPlugin
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit
 import it.ethereallabs.etherealperms.command.EtherealPermsCommand
-import it.ethereallabs.etherealperms.data.FileStorage
-import it.ethereallabs.etherealperms.data.IStorageMethod
-import it.ethereallabs.etherealperms.data.MongoStorage
-import it.ethereallabs.etherealperms.data.MySqlStorage
 import it.ethereallabs.etherealperms.data.Storage
 import it.ethereallabs.etherealperms.events.ChatListener
 import it.ethereallabs.etherealperms.permissions.EtherealPermissionProvider
 import it.ethereallabs.etherealperms.permissions.PermissionManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.*
 
 
 /**

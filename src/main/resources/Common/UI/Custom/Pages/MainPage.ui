@@ -1,0 +1,201 @@
+$C = "../Common.ui";
+
+$C.@PageOverlay {
+  LayoutMode: Middle;
+
+  $C.@DecoratedContainer #MainContainer {
+    Anchor: (Width: 1000, Height: 750);
+
+    #Title {
+      $C.@Title {
+        @Text = "EtherealPerms Editor";
+      }
+    }
+
+    #Content {
+      LayoutMode: Left;
+
+      Group #LeftDiv {
+        Anchor: (Width: 300);
+        LayoutMode: Top;
+        Background: #202b3e;
+        Padding: (Full: 10);
+
+        $C.@TextField #SearchTextField {
+          Anchor: (Bottom: 10, Height: 35);
+        }
+
+        Group #ButtonsDiv {
+          LayoutMode: Left;
+          Anchor: (Height: 40, Bottom: 10);
+
+          $C.@TextButton #GroupsButton {
+            Text: "GROUPS";
+            FlexWeight: 1;
+            Anchor: (Right: 4);
+          }
+
+          $C.@TextButton #UsersButton {
+            Text: "USERS";
+            FlexWeight: 1;
+            Anchor: (Left: 4);
+          }
+        }
+
+        Group #Separator {
+          Anchor: (Height: 1, Vertical: 5);
+          Background: #000000;
+        }
+
+        Group #AddGroupContainer {
+          LayoutMode: Left;
+          Anchor: (Height: 35, Bottom: 5);
+          Visible: false;
+
+          $C.@SecondaryTextButton #OpenCreateGroupBtn {
+            Text: "+";
+            Anchor: (Width: 35, Height: 35, Left: 4);
+          }
+
+          Label {
+            Text: "Create new group";
+            Style: (FontSize: 14, TextColor: #94a7bb, VerticalAlignment: Center);
+            Padding: (Left: 10);
+          }
+        }
+
+        Group #ElementList {
+          FlexWeight: 1;
+          LayoutMode: TopScrolling;
+          ScrollbarStyle: $C.@DefaultScrollbarStyle;
+          Padding: (Top: 5);
+        }
+      }
+
+      Group #RightDiv {
+        FlexWeight: 1;
+        LayoutMode: Top;
+        Background: #1a2433;
+        Padding: (Full: 20);
+
+        Group #HeaderContainer {
+          Anchor: (Height: 60, Bottom: 10);
+          LayoutMode: Left;
+
+          Group #SelectedDiv {
+            FlexWeight: 1;
+            LayoutMode: Left;
+            Background: #35435a;
+            Padding: (Left: 15, Right: 15);
+
+            Label #SubjectTypeLabel {
+              Text: "User: ";
+              Style: (FontSize: 22, TextColor: #ffffff, VerticalAlignment: Center);
+            }
+
+            Label #SelCatLabel {
+              Text: "Darkeox34";
+              Style: (FontSize: 22, RenderBold: true, TextColor: #ffffff, VerticalAlignment: Center);
+            }
+          }
+
+          $C.@SecondaryTextButton #AddPermButton {
+            Text: "+";
+            Anchor: (Width: 40, Left: 10);
+          }
+
+          $C.@TextButton #SaveButton {
+            Text: "SAVE";
+            Anchor: (Width: 100, Left: 4);
+          }
+        }
+
+        Group #TableHeader {
+          Anchor: (Height: 30);
+          LayoutMode: Left;
+          Padding: (Horizontal: 10);
+
+          Label {
+            Text: "Permission";
+            FlexWeight: 1;
+            Style: (TextColor: #94a7bb, RenderBold: true, FontSize: 14);
+          }
+
+          Group {
+            Anchor: (Width: 120, Right: 10);
+            LayoutMode: Left;
+
+            Label {
+              Text: "Value";
+              Style: (TextColor: #94a7bb, RenderBold: true, FontSize: 14);
+            }
+          }
+        }
+
+        Group #PermissionsContent {
+          FlexWeight: 1;
+          LayoutMode: TopScrolling;
+          ScrollbarStyle: $C.@DefaultScrollbarStyle;
+          Padding: (Top: 5);
+        }
+
+        Group #Footer {
+          Anchor: (Top: 10, Height: 50);
+          LayoutMode: Right;
+
+          $C.@SecondaryTextButton #ExitButton {
+            Text: "QUIT";
+            Anchor: (Width: 120);
+          }
+        }
+      }
+    }
+  }
+
+  Group #CreateGroupPopup {
+    Visible: false;
+    LayoutMode: Middle;
+    Anchor: (Full: 0);
+
+    $C.@DecoratedContainer {
+      Anchor: (Width: 400, Height: 220);
+
+      #Title {
+        $C.@Title { @Text = "Create Group"; }
+      }
+
+      #Content {
+        LayoutMode: Top;
+        Padding: (Full: 20);
+
+        Label {
+          Text: "New group name:";
+          Style: (FontSize: 16, TextColor: #ffffff, RenderBold: true);
+          Anchor: (Bottom: 10);
+        }
+
+        $C.@TextField #NewGroupNameInput {
+          Anchor: (Height: 40, Bottom: 20);
+          PlaceholderText: "Ex: vip";
+        }
+
+        Group #PopupButtons {
+          LayoutMode: Center;
+          Anchor: (Height: 40);
+
+          $C.@TextButton #ConfirmCreateGroup {
+            Text: "CREATE";
+            Anchor: (Width: 100, Right: 10);
+          }
+
+          $C.@SecondaryTextButton #CancelCreateGroup {
+            Text: "CANCEL";
+            Anchor: (Width: 100, Left: 10);
+          }
+        }
+      }
+    }
+  }
+}
+
+$C.@BackButton {}

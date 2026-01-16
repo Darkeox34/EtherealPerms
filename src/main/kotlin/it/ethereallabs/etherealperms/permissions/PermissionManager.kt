@@ -1,5 +1,7 @@
 package it.ethereallabs.etherealperms.permissions
 
+import com.hypixel.hytale.server.core.universe.PlayerRef
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.EtherealPerms.Companion.storage
 import it.ethereallabs.etherealperms.permissions.models.ChatMeta
@@ -68,6 +70,10 @@ class PermissionManager(private val plugin: EtherealPerms) {
     }
 
     fun getUser(uuid: UUID): User? = users[uuid]
+
+    fun getAllUsers(): List<PlayerRef>{
+        return Universe.get().players.toList()
+    }
 
     fun getUserPrimaryGroup(uuid: UUID): Group? {
         val user = getUser(uuid) ?: return null

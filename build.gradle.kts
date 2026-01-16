@@ -51,11 +51,13 @@ tasks.processResources {
 
 tasks.jar {
     archiveClassifier.set("plain")
+    from("src/main/resources")
 }
 
 tasks.shadowJar {
     archiveClassifier.set("")
-
+    from("src/main/resources")
+    destinationDirectory.set(file("C:/Users/antonio/Desktop/Hytale Server/Folder/Server/mods"))
     relocate("org.bson", "it.ethereallabs.internal.bson")
     relocate("com.mongodb", "it.ethereallabs.internal.mongodb")
 }

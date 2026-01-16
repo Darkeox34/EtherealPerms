@@ -1,0 +1,35 @@
+$C = "../Common.ui";
+
+Button {
+  Anchor: (Height: 45, Bottom: 2);
+  LayoutMode: Left;
+  Padding: (Horizontal: 8);
+  Background: #1a1a1a(0.4);
+
+  Style: (
+    Hovered: ( Background: #2a2a2a(0.8) ),
+    Pressed: ( Background: #3a3a3a(0.9) )
+  );
+
+  Label #Name {
+    Text: "Group Name";
+    FlexWeight: 1;
+    Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center);
+  }
+
+  Group {
+    LayoutMode: Left;
+    Anchor: (Height: 30, Width: 80);
+    Padding: (Top: 7);
+
+    $C.@SecondaryTextButton #EditBtn {
+      Text: "R";
+      Anchor: (Width: 35, Height: 30);
+    }
+
+    $C.@SecondaryTextButton #DeleteBtn {
+      Text: "X";
+      Anchor: (Width: 35, Height: 30, Left: 5);
+    }
+  }
+}

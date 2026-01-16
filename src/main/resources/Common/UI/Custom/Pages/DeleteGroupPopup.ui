@@ -1,0 +1,49 @@
+$C = "../Common.ui";
+
+Group #DeleteGroupOverlay {
+  LayoutMode: Middle;
+  Anchor: (Full: 0);
+  Background: #000000(0.8);
+
+  $C.@DecoratedContainer {
+    Anchor: (Width: 450, Height: 200);
+
+    #Title {
+      $C.@Title {
+        @Text = "Delete Group";
+      }
+    }
+
+    #Content {
+      LayoutMode: Top;
+      Padding: (Full: 20);
+
+      Label #DeleteMessage {
+        Text: "Do you want to delete group?";
+        Style: (
+          FontSize: 18,
+          TextColor: #ffffff,
+          RenderBold: true,
+          HorizontalAlignment: Center,
+          Wrap: true
+        );
+        Anchor: (Bottom: 30);
+      }
+
+      Group #ButtonsRow {
+        LayoutMode: Center;
+        Anchor: (Height: 40);
+
+        $C.@TextButton #ConfirmDeleteBtn {
+          Text: "YES";
+          Anchor: (Width: 100, Right: 20);
+        }
+
+        $C.@SecondaryTextButton #CancelDeleteBtn {
+          Text: "NO";
+          Anchor: (Width: 100, Left: 20);
+        }
+      }
+    }
+  }
+}

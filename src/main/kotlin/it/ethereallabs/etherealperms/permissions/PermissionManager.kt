@@ -1,5 +1,7 @@
 package it.ethereallabs.etherealperms.permissions
 
+import com.hypixel.hytale.server.core.universe.PlayerRef
+import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.EtherealPerms.Companion.storage
 import it.ethereallabs.etherealperms.permissions.models.ChatMeta
@@ -49,12 +51,22 @@ class PermissionManager(private val plugin: EtherealPerms) {
      */
     suspend fun loadUser(uuid: UUID, username: String): User {
         val user = storage.loadUser(uuid) ?: User(uuid, username).apply {
-            if (groups.containsKey("default")) {
-                nodes.add(Node("group.default"))
+            val defaultGroup = getDefaultGroup()
+            if(defaultGroup != null) {
+                nodes.add(Node("group.${defaultGroup.name}"))
+            }
+            else{
+                EtherealPerms.instance.logger.atSevere().log("No default group found! Please add the node etherealperms.default to a group to set it as default.")
             }
         }
         users[uuid] = user
         return user
+    }
+
+    fun getDefaultGroup(): Group?{
+        return groups.values.find{
+            it.nodes.contains(Node("etherealperms.default"))
+        }
     }
 
     /**
@@ -68,6 +80,10 @@ class PermissionManager(private val plugin: EtherealPerms) {
     }
 
     fun getUser(uuid: UUID): User? = users[uuid]
+
+    fun getAllUsers(): List<PlayerRef>{
+        return Universe.get().players.toList()
+    }
 
     fun getUserPrimaryGroup(uuid: UUID): Group? {
         val user = getUser(uuid) ?: return null

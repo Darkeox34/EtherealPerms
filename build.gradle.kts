@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     kotlin("jvm") version "2.2.20"
     kotlin("plugin.serialization") version "2.2.20"
@@ -5,7 +8,7 @@ plugins {
 }
 
 group = "it.ethereallabs"
-version = "1.0.3"
+version = "1.0.4"
 
 repositories {
     mavenCentral()
@@ -53,9 +56,19 @@ tasks.jar {
     archiveClassifier.set("plain")
 }
 
+val env = Properties().apply {
+    val envFile = file(".env")
+    if (envFile.exists()) {
+        load(FileInputStream(envFile))
+    }
+}
+
+val modsPath = env.getProperty("HYTALE_MODS_DIR") ?: "build/libs"
+
 tasks.shadowJar {
     archiveClassifier.set("")
-
+    destinationDirectory.set(file(modsPath))
+    minimize()
     relocate("org.bson", "it.ethereallabs.internal.bson")
     relocate("com.mongodb", "it.ethereallabs.internal.mongodb")
 }

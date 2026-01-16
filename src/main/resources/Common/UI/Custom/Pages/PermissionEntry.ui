@@ -1,0 +1,31 @@
+$C = "../Common.ui";
+
+Button {
+  Anchor: (Height: 50, Bottom: 4);
+  LayoutMode: Left;
+  Padding: (Horizontal: 10);
+  Background: #1a1a1a(0.6);
+
+  $C.@TextField #Key {
+    FlexWeight: 1;
+    Anchor: (Height: 35, Right: 10);
+  }
+
+  Group {
+    Anchor: (Width: 120);
+    LayoutMode: Left;
+
+    Group {
+      Anchor: (Width: 40);
+      LayoutMode: Left;
+      $C.@CheckBox #Value {
+        Anchor: (Width: 26, Height: 26, Top: 10);
+      }
+    }
+
+    $C.@CancelTextButton #DeletePermBtn {
+      Text: "X";
+      Anchor: (Width: 35, Height: 35, Left: 40);
+    }
+  }
+}

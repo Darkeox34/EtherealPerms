@@ -18,8 +18,7 @@ class EtherealPermissionProvider(private val permissionManager: PermissionManage
         // Retrieves all calculated permissions (including groups and inheritance).
         val effective = permissionManager.getEffectivePermissions(user)
         val result = effective.map { (key, value) ->
-            val cleanKey = if (key.endsWith(".*")) key.dropLast(2) else key
-            if (value) cleanKey else "-$cleanKey"
+            if (value) key else "-$key"
         }.toSet()
         return result
     }

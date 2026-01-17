@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "it.ethereallabs"
-version = "1.0.4"
+version = "1.0.5"
 
 repositories {
     mavenCentral()
@@ -68,7 +68,7 @@ val modsPath = env.getProperty("HYTALE_MODS_DIR") ?: "build/libs"
 tasks.shadowJar {
     archiveClassifier.set("")
     destinationDirectory.set(file(modsPath))
-    minimize()
+
     relocate("org.bson", "it.ethereallabs.internal.bson")
     relocate("com.mongodb", "it.ethereallabs.internal.mongodb")
 }

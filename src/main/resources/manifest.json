@@ -1,7 +1,7 @@
 {
     "Group": "EtherealLabs",
     "Name": "EtherealPerms",
-    "Version": "1.0.4",
+    "Version": "1.0.5",
     "Description": "A permission management plugin for Hytale",
     "Authors": [
         {

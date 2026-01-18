@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class PermissionManager(private val plugin: EtherealPerms) {
 
-    private val groups = ConcurrentHashMap<String, Group>()
+    val groups = ConcurrentHashMap<String, Group>()
     private val users = ConcurrentHashMap<UUID, User>()
 
      suspend fun reloadData(){
@@ -50,7 +50,9 @@ class PermissionManager(private val plugin: EtherealPerms) {
      * Loads a user from storage or creates a new one if not found.
      */
     suspend fun loadUser(uuid: UUID, username: String): User {
+        var new = false
         val user = storage.loadUser(uuid) ?: User(uuid, username).apply {
+            new = true
             val defaultGroup = getDefaultGroup()
             if(defaultGroup != null) {
                 nodes.add(Node("group.${defaultGroup.name}"))
@@ -59,6 +61,8 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 EtherealPerms.instance.logger.atSevere().log("No default group found! Please add the node etherealperms.default to a group to set it as default.")
             }
         }
+        if(new)
+            storage.saveUser(user)
         users[uuid] = user
         return user
     }

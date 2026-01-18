@@ -33,7 +33,26 @@ class FileStorage(plugin: EtherealPerms) : IStorageMethod {
     override suspend fun loadUser(uuid: UUID): User? =withContext(Dispatchers.IO){
         val userFile = usersDir.resolve("$uuid.json")
         if (!userFile.exists()) return@withContext null
-        return@withContext gson.fromJson(userFile.readText(), User::class.java)
+
+        val user = gson.fromJson(userFile.readText(), User::class.java)
+
+        user.nodes.removeIf { node ->
+            if (node.key.startsWith("group.")) {
+                val groupName = node.key.removePrefix("group.")
+                !EtherealPerms.permissionManager.groups.containsKey(groupName)
+            } else {
+                false
+            }
+        }
+
+        if (user.nodes.none { it.key.startsWith("group.") }) {
+            val defaultGroupName = EtherealPerms.permissionManager.getDefaultGroup()?.name ?: "group.default"
+            user.nodes.add(Node("group.$defaultGroupName"))
+        }
+
+        saveUser(user)
+
+        return@withContext user
     }
 
     override suspend fun saveUser(user: User): Any = withContext(Dispatchers.IO) {

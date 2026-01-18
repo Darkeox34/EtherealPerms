@@ -33,6 +33,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
             plugin.logger.atInfo().log("No groups found, creating a default group.")
             val defaultGroup = storage.loadDefaultGroup()
             groups[defaultGroup.name] = defaultGroup
+            saveData()
         }
         plugin.logger.atInfo().log("Loaded ${groups.size} groups.")
     }

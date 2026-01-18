@@ -23,7 +23,6 @@ class EtherealPermissionProvider(private val permissionManager: PermissionManage
         return result
     }
 
-    // Returns user groups for compatibility with other plugins.
     override fun getGroupsForUser(uuid: UUID): Set<String> {
         val user = permissionManager.getUser(uuid) ?: return emptySet()
         val groups = user.nodes

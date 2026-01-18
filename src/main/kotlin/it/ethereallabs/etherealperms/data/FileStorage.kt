@@ -58,7 +58,11 @@ class FileStorage(plugin: EtherealPerms) : IStorageMethod {
     override suspend fun loadGroups(): MutableMap<String, Group> =withContext(Dispatchers.IO){
         if (!groupsFile.exists()) return@withContext mutableMapOf()
         val type = object : TypeToken<MutableMap<String, Group>>() {}.type
-        return@withContext gson.fromJson(groupsFile.readText(), type)
+        val groups: MutableMap<String, Group> = gson.fromJson(groupsFile.readText(), type) ?: mutableMapOf()
+
+        return@withContext groups.mapValues { (key, value) -> 
+            if (value.name.isEmpty()) value.copy(name = key) else value 
+        }.toMutableMap()
     }
 
     override suspend fun saveGroups(groups: Map<String, Group>) =withContext(Dispatchers.IO){

@@ -8,7 +8,8 @@ interface PermissionSubject {
 
 @Serializable
 data class Group(
-    val name: String,
+    @Transient
+    val name: String = "",
     var weight: Int = 0,
     override val nodes: MutableSet<Node> = mutableSetOf()
 ) : PermissionSubject

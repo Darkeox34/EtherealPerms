@@ -1,13 +1,13 @@
 package it.ethereallabs.etherealperms
 
-import com.hypixel.hytale.server.core.command.system.CommandManager
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent
-import com.hypixel.hytale.server.core.permissions.PermissionHolder
 import com.hypixel.hytale.server.core.permissions.PermissionsModule
 import com.hypixel.hytale.server.core.plugin.JavaPlugin
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit
+import it.ethereallabs.etherealperms.api.EtherealPermsAPI
+import it.ethereallabs.etherealperms.api.EtherealPermsAPIImpl
 import it.ethereallabs.etherealperms.command.EtherealPermsCommand
 import it.ethereallabs.etherealperms.data.Storage
 import it.ethereallabs.etherealperms.events.ChatListener
@@ -29,12 +29,15 @@ class EtherealPerms(init: JavaPluginInit) : JavaPlugin(init) {
             private set
         lateinit var storage: Storage
             private set
+        lateinit var api: EtherealPermsAPI
+            private set
     }
 
     init {
         instance = this
         storage = Storage(this)
         permissionManager = PermissionManager(this)
+        api = EtherealPermsAPIImpl(permissionManager)
     }
 
     protected override fun setup() {

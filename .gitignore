@@ -46,3 +46,4 @@ bin/
 
 /ui_examples
 /ethereallabs-website
+.env

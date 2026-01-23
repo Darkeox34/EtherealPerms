@@ -95,6 +95,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
         return user.nodes
             .asSequence()
             .filter { it.key.startsWith("group.", ignoreCase = true) }
+            .filter { it.value }
             .mapNotNull { node ->
                 getGroup(node.key.substringAfter("group."))
             }
@@ -110,7 +111,6 @@ class PermissionManager(private val plugin: EtherealPerms) {
      * Scans all users to find those belonging to a specific group.
      */
     suspend fun getUsersWithGroup(groupName: String): List<String> {
-        // This scans all user files. For large servers, this should be cached or indexed.
         val allUsers = storage.loadAllUsers()
         return allUsers.filter { user ->
             user.nodes.any { node ->
@@ -174,15 +174,17 @@ class PermissionManager(private val plugin: EtherealPerms) {
      */
     fun getChatMeta(uuid: UUID): ChatMeta {
         val user = getUser(uuid) ?: return ChatMeta("", "")
+
         val allNodes = getEffectiveNodes(user)
 
         var prefix = ""
         var prefixPriority = Int.MIN_VALUE
-
         var suffix = ""
         var suffixPriority = Int.MIN_VALUE
 
         for (node in allNodes) {
+            if (!node.value) continue
+
             val key = node.key
             if (key.startsWith("prefix.", ignoreCase = true)) {
                 val parts = key.split(".", limit = 3)
@@ -193,8 +195,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                         prefix = parts[2]
                     }
                 }
-            }
-            else if (key.startsWith("suffix.", ignoreCase = true)) {
+            } else if (key.startsWith("suffix.", ignoreCase = true)) {
                 val parts = key.split(".", limit = 3)
                 if (parts.size == 3) {
                     val prio = parts[1].toIntOrNull() ?: 0
@@ -205,10 +206,7 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 }
             }
         }
-        return ChatMeta(
-            prefix,
-            suffix
-        )
+        return ChatMeta(prefix, suffix)
     }
 
     /**
@@ -221,34 +219,30 @@ class PermissionManager(private val plugin: EtherealPerms) {
         fun collectGroupPermissions(group: Group) {
             if (!visitedGroups.add(group.name.lowercase())) return
 
-            // Handle inheritance: Process parent groups first
             val parents = group.nodes
-                .filter { it.key.startsWith("group.") }
+                .filter { it.key.startsWith("group.") && it.value }
                 .mapNotNull { getGroup(it.key.substring(6)) }
-                .sortedBy { it.weight } // Process lower priority first, so higher overrides
+                .sortedBy { it.weight }
 
             parents.forEach { collectGroupPermissions(it) }
 
-            // Apply current group nodes
             group.nodes.forEach { node ->
                 if (!node.key.startsWith("group.")) {
-                    perms[node.key.lowercase()] = node.value
+                    perms[node.key] = node.value
                 }
             }
         }
 
-        // Process user groups
         val userGroups = user.nodes
-            .filter { it.key.startsWith("group.") }
+            .filter { it.key.startsWith("group.") && it.value }
             .mapNotNull { getGroup(it.key.substring(6)) }
             .sortedBy { it.weight }
 
         userGroups.forEach { collectGroupPermissions(it) }
 
-        // Apply user specific nodes (highest priority)
         user.nodes.forEach { node ->
             if (!node.key.startsWith("group.")) {
-                perms[node.key.lowercase()] = node.value
+                perms[node.key] = node.value
             }
         }
         return perms
@@ -262,20 +256,22 @@ class PermissionManager(private val plugin: EtherealPerms) {
             if (!visitedGroups.add(group.name.lowercase())) return
 
             val parents = group.nodes
-                .filter { it.key.startsWith("group.", ignoreCase = true) }
+                .filter { it.key.startsWith("group.", ignoreCase = true) && it.value }
                 .mapNotNull { getGroup(it.key.substring(6)) }
                 .sortedBy { it.weight }
 
             parents.forEach { collectGroupNodes(it) }
+
             nodes.addAll(group.nodes)
         }
 
         val userGroups = user.nodes
-            .filter { it.key.startsWith("group.", ignoreCase = true) }
+            .filter { it.key.startsWith("group.", ignoreCase = true) && it.value }
             .mapNotNull { getGroup(it.key.substring(6)) }
             .sortedBy { it.weight }
 
         userGroups.forEach { collectGroupNodes(it) }
+
         nodes.addAll(user.nodes)
 
         return nodes

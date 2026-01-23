@@ -40,7 +40,7 @@ class UserInfoCommand : CommandBase("info", "etherealperms.command.user.info.des
         context.sendMessage(MessageFactory.info("Groups: $groups"))
         context.sendMessage(MessageFactory.info("Nodes(${user.nodes.size}):"))
         for(node in user.nodes) {
-            context.sendMessage(Message.raw("- ${node.key}").color(Color.YELLOW))
+            context.sendMessage(Message.raw("- ${node.key} ").color(Color.YELLOW).insert(Message.raw("(${node.value})").color(Color.CYAN)))
         }
     }
 }

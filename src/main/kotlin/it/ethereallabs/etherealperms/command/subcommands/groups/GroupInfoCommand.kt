@@ -40,7 +40,7 @@ class GroupInfoCommand : CommandBase("info", "etherealperms.command.group.info.d
                     context.sendMessage(MessageFactory.info("Nodes(${group.nodes.size}):"))
 
                     for (node in group.nodes) {
-                        context.sendMessage(Message.raw("- ${node.key}").color(Color.YELLOW))
+                        context.sendMessage(Message.raw("- ${node.key} ").color(Color.YELLOW).insert(Message.raw("(${node.value})").color(Color.CYAN)))
                     }
 
                     context.sendMessage(MessageFactory.info("Members ($count): $displayMembers$suffix"))

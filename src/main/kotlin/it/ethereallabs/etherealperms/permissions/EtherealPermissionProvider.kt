@@ -1,6 +1,7 @@
 package it.ethereallabs.etherealperms.permissions
 
 import com.hypixel.hytale.server.core.permissions.provider.PermissionProvider
+import it.ethereallabs.etherealperms.EtherealPerms
 import java.util.UUID
 
 /**
@@ -10,23 +11,21 @@ class EtherealPermissionProvider(private val permissionManager: PermissionManage
     override fun getName(): String = "EtherealPerms"
 
     override fun getUserPermissions(uuid: UUID): Set<String> {
-        val user = permissionManager.getUser(uuid)
-        if (user == null) {
-            return emptySet()
-        }
+        val user = permissionManager.getUser(uuid) ?: return emptySet()
 
-        // Retrieves all calculated permissions (including groups and inheritance).
-        val effective = permissionManager.getEffectivePermissions(user)
-        val result = effective.map { (key, value) ->
-            if (value) key else "-$key"
-        }.toSet()
-        return result
+        val permissions =  permissionManager.getEffectivePermissions(user)
+            .filter { it.value }
+            .map { it.key }
+            .toSet()
+
+        return permissions
     }
 
     override fun getGroupsForUser(uuid: UUID): Set<String> {
         val user = permissionManager.getUser(uuid) ?: return emptySet()
         val groups = user.nodes
             .filter { it.key.startsWith("group.") }
+            .filter{it.value}
             .map { it.key.substring(6) }
             .toSet()
         return groups
@@ -34,7 +33,6 @@ class EtherealPermissionProvider(private val permissionManager: PermissionManage
 
     override fun getGroupPermissions(group: String): Set<String> = emptySet()
 
-    // Modification methods left empty because everything is handled via plugin commands.
     override fun addUserPermissions(uuid: UUID, permissions: Set<String>) {}
     override fun removeUserPermissions(uuid: UUID, permissions: Set<String>) {}
     override fun addGroupPermissions(group: String, permissions: Set<String>) {}

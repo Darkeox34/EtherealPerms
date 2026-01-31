@@ -1,15 +1,9 @@
 package it.ethereallabs.etherealperms.events
 
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent
-import com.hypixel.hytale.server.core.universe.PlayerRef
-import com.hypixel.hytale.server.core.universe.Universe
 import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.ColorHelper
-import it.ethereallabs.etherealperms.permissions.models.ChatMeta
 
-/**
- * Listener for handling player chat events and applying formatting.
- */
 class ChatListener {
 
     fun onPlayerChat(event: PlayerChatEvent) {
@@ -17,59 +11,33 @@ class ChatListener {
         val perms = EtherealPerms.permissionManager
         val storage = EtherealPerms.storage
 
+        if (!perms.hasPermission(player.uuid, "etherealperms.chatcolor")) {
+            val stripped = stripColors(event.content)
+            event.content = stripped
+        }
+
         val meta = perms.getChatMeta(player.uuid)
         val group = perms.getUserPrimaryGroup(player.uuid)
-
-        event.isCancelled = true
-
         val chatConfig = storage.getConfigs()
 
         val template = chatConfig.groupFormats[group?.name ?: "default"]
             ?: chatConfig.format
 
-        val context = ChatContext(
-            username = player.username,
-            displayName = player.username,
-            prefix = meta.prefix,
-            suffix = meta.suffix,
-            group = group?.name ?: "",
-            message = event.content
-        )
+        event.setFormatter { playerRef, content ->
+            var formatted = template
+                .replace("{USERNAME}", playerRef.username)
+                .replace("{DISPLAYNAME}", playerRef.username)
+                .replace("{PREFIX}", meta.prefix)
+                .replace("{SUFFIX}", meta.suffix)
+                .replace("{GROUP}", group?.name ?: "")
+                .replace("{MESSAGE}", content)
 
-        val formatted = formatChat(template, context)
-        val colored = ColorHelper.translateMessageColors(formatted)
-
-        Universe.get().players.forEach {
-            it.sendMessage(colored)
+            ColorHelper.translateMessageColors(formatted)
         }
     }
 
-
-    private val PLACEHOLDERS = mapOf(
-        "{MESSAGE}" to { ctx: ChatContext -> ctx.message },
-        "{USERNAME}" to { ctx: ChatContext -> ctx.username },
-        "{DISPLAYNAME}" to { ctx: ChatContext -> ctx.displayName },
-        "{PREFIX}" to { ctx: ChatContext -> ctx.prefix },
-        "{SUFFIX}" to { ctx: ChatContext -> ctx.suffix },
-        "{GROUP}" to { ctx: ChatContext -> ctx.group }
-    )
-
-    data class ChatContext(
-        val username: String,
-        val displayName: String,
-        val prefix: String,
-        val suffix: String,
-        val group: String,
-        val message: String
-    )
-
-    fun formatChat(template: String, context: ChatContext): String {
-        var result = template
-
-        for ((placeholder, supplier) in PLACEHOLDERS) {
-            result = result.replace(placeholder, supplier(context))
-        }
-
-        return result
+    private fun stripColors(input: String): String {
+        val pattern = Regex("<([^>]+)>|&([0-9a-fA-Fklmnor])")
+        return input.replace(pattern, "")
     }
 }

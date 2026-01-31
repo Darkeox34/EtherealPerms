@@ -209,6 +209,18 @@ class PermissionManager(private val plugin: EtherealPerms) {
         return ChatMeta(prefix, suffix)
     }
 
+    fun hasPermission(uuid: UUID, permission: String): Boolean {
+        val user = getUser(uuid) ?: return false
+        val effectivePermissions = getEffectivePermissions(user)
+        val node = permission.lowercase()
+
+        if (effectivePermissions["*"] == true) return true
+
+        if (effectivePermissions["etherealperms.*"] == true) return true
+
+        return effectivePermissions[node] == true
+    }
+
     /**
      * Calculates the effective permissions for a user, resolving group inheritance.
      */

@@ -35,7 +35,7 @@ class UserInfoCommand : CommandBase("info", "etherealperms.command.user.info.des
 
         context.sendMessage(MessageFactory.info("User Info: ${user.username}"))
         context.sendMessage(MessageFactory.info("UUID: ${user.uuid}"))
-        
+
         val groups = user.nodes.filter { it.key.startsWith("group.") }.joinToString(", ") { it.key.substring(6) }
         context.sendMessage(MessageFactory.info("Groups: $groups"))
         context.sendMessage(MessageFactory.info("Nodes(${user.nodes.size}):"))

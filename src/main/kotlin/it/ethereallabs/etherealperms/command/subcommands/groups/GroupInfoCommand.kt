@@ -10,6 +10,8 @@ import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import kotlinx.coroutines.launch
 import java.awt.Color
 
+import it.ethereallabs.etherealperms.command.utils.CommandUtils
+
 class GroupInfoCommand : CommandBase("info", "etherealperms.command.group.info.desc") {
 
     private val groupArg = withRequiredArg("group", "Target group", ArgTypes.STRING)
@@ -40,7 +42,13 @@ class GroupInfoCommand : CommandBase("info", "etherealperms.command.group.info.d
                     context.sendMessage(MessageFactory.info("Nodes(${group.nodes.size}):"))
 
                     for (node in group.nodes) {
-                        context.sendMessage(Message.raw("- ${node.key} ").color(Color.YELLOW).insert(Message.raw("(${node.value})").color(Color.CYAN)))
+                        if (node.expiry != null && node.expiry < System.currentTimeMillis()) continue
+                        var msg = Message.raw("- ${node.key} ").color(Color.YELLOW).insert(Message.raw("(${node.value})").color(Color.CYAN))
+                        if (node.expiry != null) {
+                            val time = CommandUtils.formatRemainingTime(node.expiry)
+                            msg = msg.insert(Message.raw(" [$time]").color(Color.GRAY))
+                        }
+                        context.sendMessage(msg)
                     }
 
                     context.sendMessage(MessageFactory.info("Members ($count): $displayMembers$suffix"))

@@ -14,6 +14,7 @@ class GroupPermissionSetCommand : CommandBase("set", "etherealperms.command.grou
     private val groupArg = withRequiredArg("group", "The target group", ArgTypes.STRING)
     private val nodeArg = withRequiredArg("node", "The permission node", ArgTypes.STRING)
     private val valueArg = withOptionalArg("value", "true or false", ArgTypes.BOOLEAN)
+    private val durationArg = withOptionalArg("duration", "Duration (e.g. 1d2h or timestamp)", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.group.permission.set")
@@ -23,6 +24,11 @@ class GroupPermissionSetCommand : CommandBase("set", "etherealperms.command.grou
         val groupName = groupArg.get(context)
         val nodeKey = nodeArg.get(context)
         val value = if (valueArg.provided(context)) valueArg.get(context) else true
+        val durationInput = if (durationArg.provided(context)) durationArg.get(context) else null
+        
+        val expiry = if (durationInput != null) {
+            it.ethereallabs.etherealperms.command.utils.CommandUtils.parseDuration(durationInput)
+        } else null
 
         val manager = EtherealPerms.permissionManager
         val group = manager.getGroup(groupName)
@@ -35,12 +41,13 @@ class GroupPermissionSetCommand : CommandBase("set", "etherealperms.command.grou
         EtherealPerms.storage.storageScope.launch {
             try {
                 group.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
-                group.nodes.add(Node(nodeKey, value))
+                group.nodes.add(Node(nodeKey, value, expiry))
 
                 manager.saveData()
 
                 Universe.get().worlds.values.random().execute {
-                    context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value' for group '${group.name}'."))
+                    val durationMsg = if (expiry != null) " for " + it.ethereallabs.etherealperms.command.utils.CommandUtils.formatRemainingTime(expiry) else ""
+                    context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value'${durationMsg} for group '${group.name}'."))
                 }
             } catch (e: Exception) {
                 Universe.get().worlds.values.random().execute {

@@ -13,6 +13,7 @@ class UserGroupAddCommand : CommandBase("add", "etherealperms.command.user.group
 
     private val playerArg = withRequiredArg("player", "Target player", ArgTypes.PLAYER_REF)
     private val groupArg = withRequiredArg("group", "Group to add", ArgTypes.STRING)
+    private val durationArg = withOptionalArg("duration", "Duration (e.g. 1d2h or timestamp)", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.user.group.add")
@@ -21,6 +22,12 @@ class UserGroupAddCommand : CommandBase("add", "etherealperms.command.user.group
     override fun executeSync(context: CommandContext) {
         val player = playerArg.get(context)
         val groupName = groupArg.get(context)
+        val durationInput = if (durationArg.provided(context)) durationArg.get(context) else null
+
+        val expiry = if (durationInput != null) {
+            it.ethereallabs.etherealperms.command.utils.CommandUtils.parseDuration(durationInput)
+        } else null
+
         val manager = EtherealPerms.permissionManager
 
         if (manager.getGroup(groupName) == null) {
@@ -40,11 +47,12 @@ class UserGroupAddCommand : CommandBase("add", "etherealperms.command.user.group
                     return@launch
                 }
 
-                user.nodes.add(Node(parentNode))
+                user.nodes.add(Node(parentNode, true, expiry))
                 manager.saveData()
 
                 Universe.get().worlds.values.random().execute {
-                    context.sendMessage(MessageFactory.success("Added group '$groupName' to user '${player.username}'."))
+                    val durationMsg = if (expiry != null) " for " + it.ethereallabs.etherealperms.command.utils.CommandUtils.formatRemainingTime(expiry) else ""
+                    context.sendMessage(MessageFactory.success("Added group '$groupName' to user '${player.username}'${durationMsg}."))
                 }
             } catch (e: Exception) {
                 Universe.get().worlds.values.random().execute {

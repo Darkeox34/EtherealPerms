@@ -14,6 +14,7 @@ class UserPermissionSetCommand : CommandBase("set", "etherealperms.command.user.
     private val playerArg = withRequiredArg("player", "Target player", ArgTypes.PLAYER_REF)
     private val nodeArg = withRequiredArg("node", "Permission node", ArgTypes.STRING)
     private val valueArg = withOptionalArg("value", "true or false", ArgTypes.BOOLEAN)
+    private val durationArg = withOptionalArg("duration", "Duration (e.g. 1d2h or timestamp)", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.user.permission.set")
@@ -23,6 +24,11 @@ class UserPermissionSetCommand : CommandBase("set", "etherealperms.command.user.
         val player = playerArg.get(context)
         val nodeKey = nodeArg.get(context)
         val value = if (valueArg.provided(context)) valueArg.get(context) else true
+        val durationInput = if (durationArg.provided(context)) durationArg.get(context) else null
+
+        val expiry = if (durationInput != null) {
+            it.ethereallabs.etherealperms.command.utils.CommandUtils.parseDuration(durationInput)
+        } else null
 
         val manager = EtherealPerms.permissionManager
 
@@ -31,12 +37,13 @@ class UserPermissionSetCommand : CommandBase("set", "etherealperms.command.user.
                 val user = manager.loadUser(player.uuid, player.username)
 
                 user.nodes.removeIf { it.key.equals(nodeKey, ignoreCase = true) }
-                user.nodes.add(Node(nodeKey, value))
+                user.nodes.add(Node(nodeKey, value, expiry))
 
                 manager.saveData()
 
                 Universe.get().worlds.values.random().execute {
-                    context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value' for user '${player.username}'."))
+                    val durationMsg = if (expiry != null) " for " + it.ethereallabs.etherealperms.command.utils.CommandUtils.formatRemainingTime(expiry) else ""
+                    context.sendMessage(MessageFactory.success("Set permission '$nodeKey' to '$value'${durationMsg} for user '${player.username}'."))
                 }
             } catch (e: Exception) {
                 Universe.get().worlds.values.random().execute {

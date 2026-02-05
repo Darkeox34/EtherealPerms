@@ -22,6 +22,10 @@ object CommandUtils {
     fun parseDuration(input: String): Long? {
         if (input.equals("null", ignoreCase = true) || input.equals("false", ignoreCase = true)) return null
 
+        if (input.all { it.isDigit() }) {
+            return input.toLongOrNull()
+        }
+
         var duration = 0L
         var currentNumber = StringBuilder()
 
@@ -40,5 +44,22 @@ object CommandUtils {
             }
         }
         return if (duration > 0) System.currentTimeMillis() + duration else null
+    }
+
+    fun formatRemainingTime(expiry: Long): String {
+        val diff = expiry - System.currentTimeMillis()
+        if (diff <= 0) return "Expired"
+
+        val days = TimeUnit.MILLISECONDS.toDays(diff)
+        val hours = TimeUnit.MILLISECONDS.toHours(diff) % 24
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(diff) % 60
+
+        return when {
+            days > 0 -> "$days days ${hours}h left"
+            hours > 0 -> "$hours hours ${minutes}m left"
+            minutes > 0 -> "$minutes minutes ${seconds}s left"
+            else -> "$seconds seconds left"
+        }
     }
 }

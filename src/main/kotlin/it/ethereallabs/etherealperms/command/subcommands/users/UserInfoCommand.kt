@@ -8,6 +8,8 @@ import it.ethereallabs.etherealperms.EtherealPerms
 import it.ethereallabs.etherealperms.command.utils.MessageFactory
 import java.awt.Color
 
+import it.ethereallabs.etherealperms.command.utils.CommandUtils
+
 /**
  * Command to display information about a user.
  */
@@ -40,7 +42,13 @@ class UserInfoCommand : CommandBase("info", "etherealperms.command.user.info.des
         context.sendMessage(MessageFactory.info("Groups: $groups"))
         context.sendMessage(MessageFactory.info("Nodes(${user.nodes.size}):"))
         for(node in user.nodes) {
-            context.sendMessage(Message.raw("- ${node.key} ").color(Color.YELLOW).insert(Message.raw("(${node.value})").color(Color.CYAN)))
+            if (node.expiry != null && node.expiry < System.currentTimeMillis()) continue
+            var msg = Message.raw("- ${node.key} ").color(Color.YELLOW).insert(Message.raw("(${node.value})").color(Color.CYAN))
+            if (node.expiry != null) {
+                val time = CommandUtils.formatRemainingTime(node.expiry)
+                msg = msg.insert(Message.raw(" [$time]").color(Color.GRAY))
+            }
+            context.sendMessage(msg)
         }
     }
 }

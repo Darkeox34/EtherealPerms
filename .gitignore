@@ -47,3 +47,5 @@ bin/
 /ui_examples
 /ethereallabs-website
 .env
+.gitignore
+GEMINI.md

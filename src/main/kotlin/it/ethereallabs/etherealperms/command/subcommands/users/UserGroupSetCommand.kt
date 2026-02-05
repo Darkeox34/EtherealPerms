@@ -13,6 +13,7 @@ class UserGroupSetCommand : CommandBase("set", "etherealperms.command.user.group
 
     private val playerArg = withRequiredArg("player", "Target player", ArgTypes.PLAYER_REF)
     private val groupArg = withRequiredArg("group", "Group to set", ArgTypes.STRING)
+    private val durationArg = withOptionalArg("duration", "Duration (e.g. 1d2h or timestamp)", ArgTypes.STRING)
 
     init {
         requirePermission("etherealperms.user.group.set")
@@ -21,6 +22,12 @@ class UserGroupSetCommand : CommandBase("set", "etherealperms.command.user.group
     override fun executeSync(context: CommandContext) {
         val player = playerArg.get(context)
         val groupName = groupArg.get(context)
+        val durationInput = if (durationArg.provided(context)) durationArg.get(context) else null
+
+        val expiry = if (durationInput != null) {
+            it.ethereallabs.etherealperms.command.utils.CommandUtils.parseDuration(durationInput)
+        } else null
+
         val manager = EtherealPerms.permissionManager
 
         if (manager.getGroup(groupName) == null) {
@@ -33,12 +40,13 @@ class UserGroupSetCommand : CommandBase("set", "etherealperms.command.user.group
                 val user = manager.loadUser(player.uuid, player.username)
 
                 user.nodes.removeIf { it.key.startsWith("group.") }
-                user.nodes.add(Node("group.$groupName"))
+                user.nodes.add(Node("group.$groupName", true, expiry))
 
                 manager.saveData()
 
                 Universe.get().worlds.values.random().execute {
-                    context.sendMessage(MessageFactory.success("Set group for user '${player.username}' to '$groupName'."))
+                    val durationMsg = if (expiry != null) " for " + it.ethereallabs.etherealperms.command.utils.CommandUtils.formatRemainingTime(expiry) else ""
+                    context.sendMessage(MessageFactory.success("Set group for user '${player.username}' to '$groupName'${durationMsg}."))
                 }
             } catch (e: Exception) {
                 Universe.get().worlds.values.random().execute {

@@ -19,7 +19,20 @@ class PermissionManager(private val plugin: EtherealPerms) {
     val groups = ConcurrentHashMap<String, Group>()
     private val users = ConcurrentHashMap<UUID, User>()
 
-     suspend fun reloadData(){
+     private fun cleanupNodes(nodes: MutableCollection<Node>): Boolean {
+        return nodes.removeIf { it.expiry != null && it.expiry < System.currentTimeMillis() }
+    }
+
+    private fun ensureDefaultGroup(user: User) {
+        if (user.nodes.none { it.key.startsWith("group.", ignoreCase = true) }) {
+            val defaultGroup = getDefaultGroup()
+            if (defaultGroup != null) {
+                user.nodes.add(Node("group.${defaultGroup.name}"))
+            }
+        }
+    }
+
+    suspend fun reloadData(){
         groups.clear()
         loadData()
     }
@@ -29,11 +42,20 @@ class PermissionManager(private val plugin: EtherealPerms) {
      */
     suspend fun loadData() {
         groups.putAll(storage.loadGroups())
+        
+        var dirty = false
+        groups.values.forEach { group ->
+            if (cleanupNodes(group.nodes)) dirty = true
+        }
+
         if (groups.isEmpty()) {
             plugin.logger.atInfo().log("No groups found, creating a default group.")
             val defaultGroup = storage.loadDefaultGroup()
             groups[defaultGroup.name] = defaultGroup
             saveData()
+        } else if (dirty) {
+            storage.saveGroups(groups)
+            plugin.logger.atInfo().log("Cleaned up expired permissions in groups.")
         }
         plugin.logger.atInfo().log("Loaded ${groups.size} groups.")
     }
@@ -42,6 +64,12 @@ class PermissionManager(private val plugin: EtherealPerms) {
      * Saves all groups and cached users to storage.
      */
     suspend fun saveData() {
+        groups.values.forEach { cleanupNodes(it.nodes) }
+        users.values.forEach { 
+            cleanupNodes(it.nodes)
+            ensureDefaultGroup(it)
+        }
+
         storage.saveGroups(groups)
         users.values.forEach { storage.saveUser(it) }
         plugin.logger.atInfo().log("Saved all permissions data.")
@@ -62,6 +90,14 @@ class PermissionManager(private val plugin: EtherealPerms) {
                 EtherealPerms.instance.logger.atSevere().log("No default group found! Please add the node etherealperms.default to a group to set it as default.")
             }
         }
+        
+        if (cleanupNodes(user.nodes)) {
+            new = true
+        }
+        
+        ensureDefaultGroup(user)
+        if (user.nodes.none { it.key.startsWith("group.") }) new = true // Mark save if ensureDefaultGroup added something
+
         if(new)
             storage.saveUser(user)
         users[uuid] = user
@@ -80,6 +116,8 @@ class PermissionManager(private val plugin: EtherealPerms) {
     suspend fun unloadUser(uuid: UUID) {
         val user = users.remove(uuid)
         if (user != null) {
+            cleanupNodes(user.nodes)
+            ensureDefaultGroup(user)
             storage.saveUser(user)
         }
     }
@@ -90,12 +128,19 @@ class PermissionManager(private val plugin: EtherealPerms) {
         return Universe.get().players.toList()
     }
 
+    private fun isNodeValid(node: Node): Boolean {
+        return node.expiry == null || node.expiry > System.currentTimeMillis()
+    }
+
     fun getUserPrimaryGroup(uuid: UUID): Group? {
         val user = getUser(uuid) ?: return null
+        if (cleanupNodes(user.nodes)) ensureDefaultGroup(user)
+        
         return user.nodes
             .asSequence()
             .filter { it.key.startsWith("group.", ignoreCase = true) }
             .filter { it.value }
+            .filter { isNodeValid(it) }
             .mapNotNull { node ->
                 getGroup(node.key.substringAfter("group."))
             }
@@ -113,8 +158,9 @@ class PermissionManager(private val plugin: EtherealPerms) {
     suspend fun getUsersWithGroup(groupName: String): List<String> {
         val allUsers = storage.loadAllUsers()
         return allUsers.filter { user ->
+            cleanupNodes(user.nodes)
             user.nodes.any { node ->
-                node.key.equals("group.$groupName", ignoreCase = true)
+                node.key.equals("group.$groupName", ignoreCase = true) && isNodeValid(node)
             }
         }.map { it.username }
     }
@@ -225,6 +271,8 @@ class PermissionManager(private val plugin: EtherealPerms) {
      * Calculates the effective permissions for a user, resolving group inheritance.
      */
     fun getEffectivePermissions(user: User): Map<String, Boolean> {
+        if (cleanupNodes(user.nodes)) ensureDefaultGroup(user)
+
         val perms = mutableMapOf<String, Boolean>()
         val visitedGroups = mutableSetOf<String>()
 
@@ -232,28 +280,28 @@ class PermissionManager(private val plugin: EtherealPerms) {
             if (!visitedGroups.add(group.name.lowercase())) return
 
             val parents = group.nodes
-                .filter { it.key.startsWith("group.") && it.value }
+                .filter { it.key.startsWith("group.") && it.value && isNodeValid(it) }
                 .mapNotNull { getGroup(it.key.substring(6)) }
                 .sortedBy { it.weight }
 
             parents.forEach { collectGroupPermissions(it) }
 
             group.nodes.forEach { node ->
-                if (!node.key.startsWith("group.")) {
+                if (!node.key.startsWith("group.") && isNodeValid(node)) {
                     perms[node.key] = node.value
                 }
             }
         }
 
         val userGroups = user.nodes
-            .filter { it.key.startsWith("group.") && it.value }
+            .filter { it.key.startsWith("group.") && it.value && isNodeValid(it) }
             .mapNotNull { getGroup(it.key.substring(6)) }
             .sortedBy { it.weight }
 
         userGroups.forEach { collectGroupPermissions(it) }
 
         user.nodes.forEach { node ->
-            if (!node.key.startsWith("group.")) {
+            if (!node.key.startsWith("group.") && isNodeValid(node)) {
                 perms[node.key] = node.value
             }
         }
@@ -261,6 +309,8 @@ class PermissionManager(private val plugin: EtherealPerms) {
     }
 
     private fun getEffectiveNodes(user: User): List<Node> {
+        if (cleanupNodes(user.nodes)) ensureDefaultGroup(user)
+
         val nodes = mutableListOf<Node>()
         val visitedGroups = mutableSetOf<String>()
 
@@ -268,23 +318,23 @@ class PermissionManager(private val plugin: EtherealPerms) {
             if (!visitedGroups.add(group.name.lowercase())) return
 
             val parents = group.nodes
-                .filter { it.key.startsWith("group.", ignoreCase = true) && it.value }
+                .filter { it.key.startsWith("group.", ignoreCase = true) && it.value && isNodeValid(it) }
                 .mapNotNull { getGroup(it.key.substring(6)) }
                 .sortedBy { it.weight }
 
             parents.forEach { collectGroupNodes(it) }
 
-            nodes.addAll(group.nodes)
+            nodes.addAll(group.nodes.filter { isNodeValid(it) })
         }
 
         val userGroups = user.nodes
-            .filter { it.key.startsWith("group.", ignoreCase = true) && it.value }
+            .filter { it.key.startsWith("group.", ignoreCase = true) && it.value && isNodeValid(it) }
             .mapNotNull { getGroup(it.key.substring(6)) }
             .sortedBy { it.weight }
 
         userGroups.forEach { collectGroupNodes(it) }
 
-        nodes.addAll(user.nodes)
+        nodes.addAll(user.nodes.filter { isNodeValid(it) })
 
         return nodes
     }

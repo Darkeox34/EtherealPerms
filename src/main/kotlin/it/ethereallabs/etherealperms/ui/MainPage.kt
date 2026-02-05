@@ -14,6 +14,7 @@ import it.ethereallabs.etherealperms.permissions.models.Group
 import it.ethereallabs.etherealperms.permissions.models.Node
 import it.ethereallabs.etherealperms.permissions.models.User
 import it.ethereallabs.etherealperms.ui.models.EditorEventData
+import it.ethereallabs.etherealperms.command.utils.CommandUtils
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -160,6 +161,7 @@ class MainPage(playerRef: PlayerRef, lifetime: CustomPageLifetime) :
             "DELETE_PERMISSION" -> handleDeletePermission(data.targetName, update, events)
             "UPDATE_PERM_KEY" -> handleUpdatePermKey(data.targetName, data.value)
             "UPDATE_PERM_VALUE" -> handleUpdatePermValue(data.targetName, data.booleanValue)
+            "UPDATE_PERM_EXPIRY" -> handleUpdatePermExpiry(data.targetName, data.value)
             "QUIT" -> this.close()
             "SAVE" -> handleSave(update)
         }
@@ -201,6 +203,15 @@ class MainPage(playerRef: PlayerRef, lifetime: CustomPageLifetime) :
         if (index in currentEditingNodes.indices) {
 
             currentEditingNodes[index] = currentEditingNodes[index].copy(value = newValue)
+            syncToLocal()
+        }
+    }
+
+    private fun handleUpdatePermExpiry(indexStr: String, input: String) {
+        val index = indexStr.toIntOrNull() ?: return
+        if (index in currentEditingNodes.indices) {
+            val expiry = CommandUtils.parseDuration(input)
+            currentEditingNodes[index] = currentEditingNodes[index].copy(expiry = expiry)
             syncToLocal()
         }
     }
@@ -362,12 +373,21 @@ class MainPage(playerRef: PlayerRef, lifetime: CustomPageLifetime) :
             val rowSelector = "#PermissionsContent[$index]"
             builder.set("$rowSelector #Key.Value", node.key)
             builder.set("$rowSelector #Value.Value", node.value)
+            
+            val expiryText = if (node.expiry != null) CommandUtils.formatDurationShort(node.expiry) else ""
+            builder.set("$rowSelector #Expiry.Value", expiryText)
 
             events.addEventBinding(
                 CustomUIEventBindingType.ValueChanged,
                 "$rowSelector #Key",
                 createData("UPDATE_PERM_KEY", index.toString())
                     .append("@Value", "$rowSelector #Key.Value")
+            )
+            events.addEventBinding(
+                CustomUIEventBindingType.ValueChanged,
+                "$rowSelector #Expiry",
+                createData("UPDATE_PERM_EXPIRY", index.toString())
+                    .append("@Value", "$rowSelector #Expiry.Value")
             )
             events.addEventBinding(
                 CustomUIEventBindingType.ValueChanged,

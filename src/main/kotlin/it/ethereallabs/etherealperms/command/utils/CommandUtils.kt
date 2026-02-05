@@ -62,4 +62,22 @@ object CommandUtils {
             else -> "$seconds seconds left"
         }
     }
+
+    fun formatDurationShort(expiry: Long): String {
+        val diff = expiry - System.currentTimeMillis()
+        if (diff <= 0) return ""
+
+        val days = TimeUnit.MILLISECONDS.toDays(diff)
+        val hours = TimeUnit.MILLISECONDS.toHours(diff) % 24
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(diff) % 60
+
+        val sb = StringBuilder()
+        if (days > 0) sb.append("${days}d ")
+        if (hours > 0) sb.append("${hours}h ")
+        if (minutes > 0) sb.append("${minutes}m ")
+        if (seconds > 0) sb.append("${seconds}s")
+
+        return sb.toString().trim()
+    }
 }

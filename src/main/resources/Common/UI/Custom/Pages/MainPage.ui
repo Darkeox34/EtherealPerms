@@ -116,6 +116,12 @@ $C.@PageOverlay {
             Style: (TextColor: #94a7bb, RenderBold: true, FontSize: 14);
           }
 
+          Label {
+            Text: "Expiry";
+            Anchor: (Width: 100, Right: 10);
+            Style: (TextColor: #94a7bb, RenderBold: true, FontSize: 14);
+          }
+
           Group {
             Anchor: (Width: 120, Right: 10);
             LayoutMode: Left;

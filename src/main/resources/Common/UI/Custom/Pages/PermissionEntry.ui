@@ -11,6 +11,11 @@ Button {
     Anchor: (Height: 35, Right: 10);
   }
 
+  $C.@TextField #Expiry {
+    Anchor: (Width: 100, Height: 35, Right: 10);
+    PlaceholderText: "Duration";
+  }
+
   Group {
     Anchor: (Width: 120);
     LayoutMode: Left;

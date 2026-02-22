@@ -8,14 +8,22 @@ plugins {
 }
 
 group = "it.ethereallabs"
-version = "1.1.0"
+version = "1.1.1"
 
 repositories {
     mavenCentral()
+    maven {
+        name = "hytale-release"
+        url = uri("https://maven.hytale.com/release")
+    }
+    maven {
+        name = "hytale-pre-release"
+        url = uri("https://maven.hytale.com/pre-release")
+    }
 }
 
 dependencies {
-    compileOnly(files("libs/HytaleServer.jar"))
+    compileOnly("com.hypixel.hytale:Server:2026.02.19-1a311a592")
     implementation("org.yaml:snakeyaml:2.3")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
